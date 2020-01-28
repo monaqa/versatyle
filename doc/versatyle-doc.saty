@@ -1,6 +1,6 @@
 @import: ../src/versatyle
 
 Versatyle.document'<
-  +p{Versatyle: SATySFi の汎用パッケージ}
-  +p{こんなふうに書ける．数式も書ける． ${y = x^2}}
+  +p{\emph{Versatyle}: SATySFi の汎用パッケージ}
+  +p{こんなふうに書ける．\emph{数式}も書ける． ${y = x^2}}
 >

@@ -4,21 +4,70 @@ module Versatyle : sig
 
   direct \math : [math] inline-cmd
   direct +p : [inline-text] block-cmd
+  direct \emph : [inline-text] inline-cmd
 
   val document : block-text -> document
 
 end = struct
 
-  let-inline ctx \math m = 
+  %% config {{{
+
+  let text-width = 440pt
+  let text-height = 630pt
+  let text-origin-pos = (60pt, 100pt)
+
+  let cfg-text-normal = (|
+    size = 10pt;
+    font-latin = (`Junicode`, 1.0, 0.);
+    font-cjk   = (`ipaexm`, 0.88, 0.);
+    font-math  = `lmodern`;
+    par-margin-ratio = (0.6, 0.6);
+    leading-ratio = 1.4;
+  |)
+
+  let cfg-text = (|
+    normal = cfg-text-normal;
+    emph =
+      (| cfg-text-normal
+        with font-cjk = (`ipaexg`, 0.88, 0.);
+        font-latin = (`Junicode-it`, 1.0, 0.)
+      |)
+  |)
+  %% }}}
+
+  %% convenient functions {{{
+
+  % size だけを変更する
+  let set-fcfg-size fcfg ctx = set-font-size fcfg#size ctx
+
+  % 書体だけを変更する
+  let set-fcfg-font fcfg ctx =
+    ctx |> set-font Kana           fcfg#font-cjk
+        |> set-font HanIdeographic fcfg#font-cjk
+        |> set-font Latin          fcfg#font-latin
+        |> set-math-font fcfg#font-math
+
+  % 一括で変更する
+  let set-font-cfg fcfg ctx =
+    let fsize = fcfg#size in
+    let (mgn-upper-ratio, mgn-lower-ratio) = fcfg#par-margin-ratio in
+    ctx |> set-font-size fsize
+        |> set-fcfg-font fcfg
+        |> set-paragraph-margin (fsize *' mgn-upper-ratio) (fsize *' mgn-lower-ratio)
+        |> set-leading (fsize *' fcfg#leading-ratio)
+
+  %% }}}
+
+  let-inline ctx \math m =
     script-guard Latin (embed-math ctx m)
 
   let-block ctx +p it =
     line-break true true ctx
       (read-inline ctx it ++ inline-fil)
 
-  let text-width = 440pt
-  let text-height = 630pt
-  let text-origin-pos = (60pt, 100pt)
+  let-inline ctx \emph it =
+    let ctx-emph = ctx |> set-fcfg-font cfg-text#emph in
+    read-inline ctx-emph it
 
   let document bt =
 
@@ -29,10 +78,7 @@ end = struct
         |> set-language HanIdeographic Japanese
         |> set-dominant-narrow-script Latin
         |> set-language Latin English
-        |> set-font Kana           (`ipaexm`, 0.88, 0.)
-        |> set-font HanIdeographic (`ipaexm`, 0.88, 0.)
-        |> set-font Latin          (`Junicode`, 1.0, 0.)
-        |> set-math-font `lmodern`
+        |> set-font-cfg cfg-text#normal
         |> set-hyphen-penalty 100
     in
 
