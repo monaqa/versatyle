@@ -1,6 +1,6 @@
 @import: ../src/versatyle
 
-document'<
+Versatyle.document'<
   +p{Versatyle: SATySFi の汎用パッケージ}
   +p{こんなふうに書ける．}
 >
