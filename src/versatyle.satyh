@@ -16,16 +16,31 @@ end = struct
     line-break true true ctx
       (read-inline ctx it ++ inline-fil)
 
+  let text-width = 440pt
+  let text-height = 630pt
+  let text-origin-pos = (60pt, 100pt)
+
   let document bt =
+
     let ctx =
-      get-initial-context 440pt (command \math)
+      get-initial-context text-width (command \math)
+        |> set-dominant-wide-script Kana
+        |> set-language Kana Japanese
+        |> set-language HanIdeographic Japanese
         |> set-dominant-narrow-script Latin
+        |> set-language Latin English
+        |> set-font Kana           (`ipaexm`, 0.88, 0.)
+        |> set-font HanIdeographic (`ipaexm`, 0.88, 0.)
+        |> set-font Latin          (`Junicode`, 1.0, 0.)
+        |> set-math-font `lmodern`
+        |> set-hyphen-penalty 100
     in
+
     let bb = read-block ctx bt in
     let pagecontf _ =
       (|
-        text-origin = (60pt, 100pt);
-        text-height = 630pt;
+        text-origin = text-origin-pos;
+        text-height = text-height;
       |)
     in
     let pagepartsf _ =

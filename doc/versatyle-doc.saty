@@ -2,5 +2,5 @@
 
 Versatyle.document'<
   +p{Versatyle: SATySFi の汎用パッケージ}
-  +p{こんなふうに書ける．}
+  +p{こんなふうに書ける．数式も書ける． ${y = x^2}}
 >
