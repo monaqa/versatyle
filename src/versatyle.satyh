@@ -2,11 +2,13 @@
 
 module Versatyle : sig
 
+  val document : block-text -> document
+
+  direct +section : [inline-text; block-text] block-cmd
+
   direct \math : [math] inline-cmd
   direct +p : [inline-text] block-cmd
   direct \emph : [inline-text] inline-cmd
-
-  val document : block-text -> document
 
 end = struct
 
@@ -25,23 +27,32 @@ end = struct
     leading-ratio = 1.4;
   |)
 
+  let cfg-text-emph = (|
+    cfg-text-normal
+      with font-cjk = (`ipaexg`, 0.88, 0.);
+      font-latin = (`Junicode-it`, 1.0, 0.);
+  |)
+
   let cfg-text = (|
     normal = cfg-text-normal;
-    emph =
-      (| cfg-text-normal
-        with font-cjk = (`ipaexg`, 0.88, 0.);
-        font-latin = (`Junicode-it`, 1.0, 0.)
-      |)
+    emph =cfg-text-emph;
+    section-title = (|
+      cfg-text-emph
+        with size = 20pt;
+        font-latin = (`Junicode`, 1.0, 0.);
+        par-margin-ratio = (1.0, 0.8);
+    |)
   |)
+
   %% }}}
 
-  %% convenient functions {{{
+  %% convenient values/functions {{{
 
   % size だけを変更する
-  let set-fcfg-size fcfg ctx = set-font-size fcfg#size ctx
+  let set-font-cfg-size fcfg ctx = set-font-size fcfg#size ctx
 
   % 書体だけを変更する
-  let set-fcfg-font fcfg ctx =
+  let set-font-cfg-font fcfg ctx =
     ctx |> set-font Kana           fcfg#font-cjk
         |> set-font HanIdeographic fcfg#font-cjk
         |> set-font Latin          fcfg#font-latin
@@ -52,22 +63,21 @@ end = struct
     let fsize = fcfg#size in
     let (mgn-upper-ratio, mgn-lower-ratio) = fcfg#par-margin-ratio in
     ctx |> set-font-size fsize
-        |> set-fcfg-font fcfg
+        |> set-font-cfg-font fcfg
         |> set-paragraph-margin (fsize *' mgn-upper-ratio) (fsize *' mgn-lower-ratio)
         |> set-leading (fsize *' fcfg#leading-ratio)
 
+  let no-pads = (0pt, 0pt, 0pt, 0pt)
   %% }}}
+
+  %% math-cmd {{{
 
   let-inline ctx \math m =
     script-guard Latin (embed-math ctx m)
 
-  let-block ctx +p it =
-    line-break true true ctx
-      (read-inline ctx it ++ inline-fil)
+  %% }}}
 
-  let-inline ctx \emph it =
-    let ctx-emph = ctx |> set-fcfg-font cfg-text#emph in
-    read-inline ctx-emph it
+  %% document {{{
 
   let document bt =
 
@@ -98,5 +108,36 @@ end = struct
       |)
     in
     page-break A4Paper pagecontf pagepartsf bb
+
+  %% }}}
+
+  %% section {{{
+
+  % let-block +section
+  let-block ctx +section it-title bt-inner =
+    let ctx-title = ctx |> set-font-cfg cfg-text#section-title in
+    let ib-num = read-inline ctx-title {1} in
+    let ib-title = read-inline ctx-title it-title in
+    let bb-title =
+      line-break true false ctx-title
+        (ib-num ++ (inline-skip 10pt) ++ ib-title ++ (inline-fil))
+    in
+    let bb-inner = read-block ctx bt-inner in
+
+    bb-title +++ bb-inner
+
+  %% }}}
+
+  %% paragraph/inline-decoration {{{
+
+  let-block ctx +p it =
+    line-break true true ctx
+      (read-inline ctx it ++ inline-fil)
+
+  let-inline ctx \emph it =
+    let ctx-emph = ctx |> set-font-cfg-font cfg-text#emph in
+    read-inline ctx-emph it
+
+  %% }}}
 
 end
