@@ -1,22 +1,30 @@
 %vim: fdm=marker
 
+@require: color
+@require: gr
+
 module Versatyle : sig
+
+  %% signature {{{
 
   val document : block-text -> document
 
+  direct +part : [inline-text; block-text] block-cmd
+  direct +chapter : [inline-text; block-text] block-cmd
   direct +section : [inline-text; block-text] block-cmd
+  direct +subsection : [inline-text; block-text] block-cmd
+  direct +subsubsection : [inline-text; block-text] block-cmd
 
   direct \math : [math] inline-cmd
   direct +p : [inline-text] block-cmd
   direct \emph : [inline-text] inline-cmd
 
+  %% }}}
+
 end = struct
 
   %% config {{{
 
-  let text-width = 440pt
-  let text-height = 630pt
-  let text-origin-pos = (60pt, 100pt)
 
   let cfg-text-normal = (|
     size = 10pt;
@@ -33,15 +41,31 @@ end = struct
       font-latin = (`Junicode-it`, 1.0, 0.);
   |)
 
+  let cfg-text-title = (|
+    cfg-text-normal
+      with font-cjk = (`ipaexg`, 0.88, 0.);
+      font-latin = (`Junicode`, 1.0, 0.);
+      par-margin-ratio = (1.0, 0.8);
+  |)
+
   let cfg-text = (|
     normal = cfg-text-normal;
     emph =cfg-text-emph;
-    section-title = (|
-      cfg-text-emph
-        with size = 20pt;
-        font-latin = (`Junicode`, 1.0, 0.);
-        par-margin-ratio = (1.0, 0.8);
-    |)
+    part-title-num = (| cfg-text-title with size = 16pt; par-margin-ratio = (0.8, 0.8)|);
+    part-title-text = (| cfg-text-title with size = 32pt; par-margin-ratio = (0.8, 0.8)|);
+    chapter-title = (| cfg-text-title with size = 32pt; |);
+    section-title = (| cfg-text-title with size = 20pt; |);
+    subsection-title = (| cfg-text-title with size = 16pt; |);
+    subsubsection-title = (| cfg-text-title with size = 12pt; |);
+  |)
+
+  let cfg-length = (|
+    text-width = 440pt;
+    text-height = 630pt;
+    text-origin-pos = (60pt, 100pt);
+    sec-num-skip = 10pt;
+    sse-num-skip = 8pt;
+    sss-num-skip = 5pt;
   |)
 
   %% }}}
@@ -82,7 +106,7 @@ end = struct
   let document bt =
 
     let ctx =
-      get-initial-context text-width (command \math)
+      get-initial-context cfg-length#text-width (command \math)
         |> set-dominant-wide-script Kana
         |> set-language Kana Japanese
         |> set-language HanIdeographic Japanese
@@ -95,8 +119,8 @@ end = struct
     let bb = read-block ctx bt in
     let pagecontf _ =
       (|
-        text-origin = text-origin-pos;
-        text-height = text-height;
+        text-origin = cfg-length#text-origin-pos;
+        text-height = cfg-length#text-height;
       |)
     in
     let pagepartsf _ =
@@ -113,14 +137,79 @@ end = struct
 
   %% section {{{
 
-  % let-block +section
+  let-block ctx +part it-title bt-inner =
+    let ctx-title = ctx |> set-font-cfg cfg-text#part-title-text in
+    let ctx-num = ctx |> set-font-cfg cfg-text#part-title-num in
+    let ib-num = read-inline ctx-num {PART I} in
+    let ib-title = read-inline ctx-title it-title in
+
+    let ib-gr = inline-graphics cfg-length#text-width 3pt 0pt (fun (x, y) -> [
+      fill (Color.gray 0.6) (Gr.rectangle (x, y) (x +' cfg-length#text-width, y +' 3pt))
+    ])
+    in
+
+    let bb-gr = line-break false false (ctx-title |> set-paragraph-margin 0pt 20pt) ib-gr in
+
+    let bb-num = line-break false false ctx-num (inline-fil ++ ib-num ++ inline-fil) in
+    let bb-title = line-break true false ctx-title (inline-fil ++ ib-title ++ inline-fil) in
+    let bb-title-overall = bb-gr +++ bb-num +++ bb-title +++ bb-gr in
+    let bb-inner = read-block ctx bt-inner in
+
+    let skip-length = (cfg-length#text-height -' (get-natural-length bb-title-overall)) *' 0.5 in
+
+    clear-page +++ (block-skip skip-length)
+      +++ bb-title-overall +++ bb-inner
+
+  let-block ctx +chapter it-title bt-inner =
+    let ctx-title = ctx |> set-font-cfg cfg-text#chapter-title in
+    let leading-height = (get-font-size ctx-title) *' 0.5 in
+    let title-inner-sep = (get-font-size ctx-title) *' 1.2 in
+    let ib-num = read-inline ctx-title {Chapter 1} in
+    let ib-title = read-inline ctx-title it-title in
+
+    let bb-num = line-break true false
+      (ctx-title |> set-paragraph-margin 0pt leading-height)
+        (ib-num ++ inline-fil)
+    in
+    let bb-title = line-break false false
+      (ctx-title |> set-paragraph-margin leading-height title-inner-sep)
+        (ib-title ++ inline-fil)
+    in
+    let bb-inner = read-block ctx bt-inner in
+
+    clear-page +++ bb-num +++ bb-title +++ bb-inner
+
   let-block ctx +section it-title bt-inner =
     let ctx-title = ctx |> set-font-cfg cfg-text#section-title in
-    let ib-num = read-inline ctx-title {1} in
+    let ib-num = read-inline ctx-title {1.1} in
     let ib-title = read-inline ctx-title it-title in
     let bb-title =
       line-break true false ctx-title
-        (ib-num ++ (inline-skip 10pt) ++ ib-title ++ (inline-fil))
+        (ib-num ++ (inline-skip cfg-length#sec-num-skip) ++ ib-title ++ inline-fil)
+    in
+    let bb-inner = read-block ctx bt-inner in
+
+    bb-title +++ bb-inner
+
+  let-block ctx +subsection it-title bt-inner =
+    let ctx-title = ctx |> set-font-cfg cfg-text#subsection-title in
+    let ib-num = read-inline ctx-title {1.1.1} in
+    let ib-title = read-inline ctx-title it-title in
+    let bb-title =
+      line-break true false ctx-title
+        (ib-num ++ (inline-skip cfg-length#sse-num-skip) ++ ib-title ++ inline-fil)
+    in
+    let bb-inner = read-block ctx bt-inner in
+
+    bb-title +++ bb-inner
+
+  let-block ctx +subsubsection it-title bt-inner =
+    let ctx-title = ctx |> set-font-cfg cfg-text#subsubsection-title in
+    let ib-num = read-inline ctx-title {1.1.1.1} in
+    let ib-title = read-inline ctx-title it-title in
+    let bb-title =
+      line-break true false ctx-title
+        (ib-num ++ (inline-skip cfg-length#sss-num-skip) ++ ib-title ++ inline-fil)
     in
     let bb-inner = read-block ctx bt-inner in
 

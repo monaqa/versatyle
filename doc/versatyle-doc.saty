@@ -1,11 +1,45 @@
 @import: ../src/versatyle
 
-Versatyle.document'<
-  +section{テスト}<
-    +p{\emph{Versatyle}: SATySFi の汎用パッケージ}
-    +p{こんなふうに書ける．\emph{数式}も書ける． ${y = x^2}}
-  >
+let (++|) a b = {#a;#b;}
+in
 
-  +section{ほげ}<
+Versatyle.document'<
+
++part{はじめに}<
+  +chapter{本書について}<
+    +section{本書の構成}<
+      +p{
+        本書は3部構成です．
+      }
+    >
   >
 >
+
++part{マークアップ}<
+  +chapter{型}<
+    +p{
+      SATySFi で文章を書くのに必ず理解しなければならない知識があります．
+      そこまで多くはないので，頑張って覚えましょう．
+      といっても，書きながら慣れていけば問題ありません．
+    }
+
+    +section{テキスト型}<
+      +p{SATySFi には inline-text 型と呼ばれる型と block-text 型と呼ばれる型があります．}
+      +subsection{inline 型}<
+        +p{inline-text 型は，水平に文字を並べるときの文字情報です．}
+      >
+    >
+  >
+>
+
++part{プログラミング}<
+>
++section{テスト}<
+  +p{\emph{Versatyle}: SATySFi の汎用パッケージ}
+  +p{こんなふうに書ける．\emph{数式}も書ける． ${y = x^2}}
+>
+
++section{ほげ}<
+>
+
+> % document
