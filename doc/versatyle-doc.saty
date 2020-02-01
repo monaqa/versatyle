@@ -1,3 +1,5 @@
+@require: enumitem
+@require: code
 @import: ../src/versatyle
 
 let (++|) a b = {#a;#b;}
@@ -7,39 +9,60 @@ Versatyle.document'<
 
 +part{はじめに}<
   +chapter{本書について}<
+    +p{
+      本書は，SATySFi の汎用的なクラスファイルである
+      Versatyle パッケージの使用及び使い方を記したものです．
+      本書自身も Versatyle を用いて書かれています．
+      本書は，単なる Versatyle パッケージの使用法にとどまらず，
+      SATySFi を用いた一般的なドキュメント作成の仕方，
+      文書設定やクラスファイル，パッケージのカスタマイズ方法などについても述べます．
+    }
     +section{本書の構成}<
       +p{
         本書は3部構成です．
+        第一部では，まず SATySFi での文書作成において欠かせない基本的な知識を説明します．
+        第二部では，Versatyle を用いた文書作成について，
+        SATySFi のマークアップ言語としての側面に焦点を当てつつ説明します．
+        第三部では，独自のコマンドを定義したり，
+        パッケージやクラスファイルを作成及びカスタマイズしたりする際に
+        必要な知識である， SATySFi のプログラミング言語としての側面を説明します．
       }
     >
   >
 >
 
 +part{マークアップ}<
-  +chapter{型}<
-    +p{
-      SATySFi で文章を書くのに必ず理解しなければならない知識があります．
-      そこまで多くはないので，頑張って覚えましょう．
-      といっても，書きながら慣れていけば問題ありません．
-    }
+  +chapter{文書構造}<
+    +section{章立て}<
+      +p{
+        ドキュメントを作成する上で，章立ては重要な要素といえます．
+        Versatyle では章立てのために以下のコマンドを用意しています．
+      }
 
-    +section{テキスト型}<
-      +p{SATySFi には inline-text 型と呼ばれる型と block-text 型と呼ばれる型があります．}
-      +subsection{inline 型}<
-        +p{inline-text 型は，水平に文字を並べるときの文字情報です．}
+      +listing{
+        * \code(`+part`);: （日本語で言うところの）部
+        * \code(`+chapter`);: （日本語で言うところの）章
+        * \code(`+section`);: （日本語で言うところの）節
+        * \code(`+subsection`);: （日本語で言うところの）小節
+        * \code(`+subsubsection`);: （日本語で言うところの）小々節
+      }
+
+      +p{
+        SATySFi では，これらを入れ子構造で記述します．
+      }
+
+      +subsection{部 (part)}<
+        +p{
+          部を作成するには \code(`+part`); を用います．
+        }
       >
+
     >
   >
 >
 
 +part{プログラミング}<
->
-+section{テスト}<
-  +p{\emph{Versatyle}: SATySFi の汎用パッケージ}
-  +p{こんなふうに書ける．\emph{数式}も書ける． ${y = x^2}}
->
 
-+section{ほげ}<
 >
 
 > % document

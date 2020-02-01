@@ -2,12 +2,23 @@
 
 @require: color
 @require: gr
+@require: base/ref
+@require: base/map
+
 
 module Versatyle : sig
 
   %% signature {{{
 
   val document : block-text -> document
+
+  val counter : (|
+      part: int ref;
+      chapter: int ref;
+      section: int ref;
+      subsection: int ref;
+      subsubsection: int ref;
+    |)
 
   direct +part : [inline-text; block-text] block-cmd
   direct +chapter : [inline-text; block-text] block-cmd
@@ -19,6 +30,8 @@ module Versatyle : sig
   direct +p : [inline-text] block-cmd
   direct \emph : [inline-text] inline-cmd
 
+  direct +set-param: ['a ref; 'a] block-cmd
+
   %% }}}
 
 end = struct
@@ -28,8 +41,8 @@ end = struct
 
   let cfg-text-normal = (|
     size = 10pt;
-    font-latin = (`Junicode`, 1.0, 0.);
-    font-cjk   = (`ipaexm`, 0.88, 0.);
+    font-latin = (`Junicode`, 1.13, 0.);
+    font-cjk   = (`ipaexm`, 1.0, 0.);
     font-math  = `lmodern`;
     par-margin-ratio = (0.6, 0.6);
     leading-ratio = 1.4;
@@ -37,14 +50,14 @@ end = struct
 
   let cfg-text-emph = (|
     cfg-text-normal
-      with font-cjk = (`ipaexg`, 0.88, 0.);
-      font-latin = (`Junicode-it`, 1.0, 0.);
+      with font-cjk = (`ipaexg`, 1.0, 0.);
+      font-latin = (`Junicode-it`, 1.13, 0.);
   |)
 
   let cfg-text-title = (|
     cfg-text-normal
-      with font-cjk = (`ipaexg`, 0.88, 0.);
-      font-latin = (`Junicode`, 1.0, 0.);
+      with font-cjk = (`ipaexg`, 1.0, 0.);
+      font-latin = (`Junicode`, 1.13, 0.);
       par-margin-ratio = (1.0, 0.8);
   |)
 
@@ -52,8 +65,8 @@ end = struct
     normal = cfg-text-normal;
     emph =cfg-text-emph;
     part-title-num = (| cfg-text-title with size = 16pt; par-margin-ratio = (0.8, 0.8)|);
-    part-title-text = (| cfg-text-title with size = 32pt; par-margin-ratio = (0.8, 0.8)|);
-    chapter-title = (| cfg-text-title with size = 32pt; |);
+    part-title-text = (| cfg-text-title with size = 28pt; par-margin-ratio = (0.8, 0.8)|);
+    chapter-title = (| cfg-text-title with size = 28pt; |);
     section-title = (| cfg-text-title with size = 20pt; |);
     subsection-title = (| cfg-text-title with size = 16pt; |);
     subsubsection-title = (| cfg-text-title with size = 12pt; |);
@@ -66,11 +79,16 @@ end = struct
     sec-num-skip = 10pt;
     sse-num-skip = 8pt;
     sss-num-skip = 5pt;
+    p-indent = cfg-text#normal#size;
   |)
 
   %% }}}
 
   %% convenient values/functions {{{
+
+  let-block ctx +set-param key value =
+    let () = key |> Ref.set value in
+    block-nil
 
   % size だけを変更する
   let set-font-cfg-size fcfg ctx = set-font-size fcfg#size ctx
@@ -137,10 +155,68 @@ end = struct
 
   %% section {{{
 
+    let counter = (|
+      part = Ref.make 0;
+      chapter = Ref.make 0;
+      section = Ref.make 0;
+      subsection = Ref.make 0;
+      subsubsection = Ref.make 0;
+    |)
+
+  let num-to-roman-char capital num =
+    let unic-point = match num with
+      |  1 -> 0x0049  % `I`
+      |  5 -> 0x0056  % `V`
+      | 10 -> 0x0058  % `X`
+      |  _ -> 0x003F  % `?`
+    in
+    if capital then unic-point else unic-point + 0x20
+
+  let roman-seq num = match num with
+    |  1 -> [ 1;                 ] % i
+    |  2 -> [ 1;  1;             ] % ii
+    |  3 -> [ 1;  1;  1;         ] % iii
+    |  4 -> [ 1;  5;             ] % iv
+    |  5 -> [ 5;                 ] % v
+    |  6 -> [ 5;  1;             ] % vi
+    |  7 -> [ 5;  1;  1;         ] % vii
+    |  8 -> [ 5;  1;  1;  1;     ] % viii
+    |  9 -> [ 1; 10;             ] % ix
+    | 10 -> [10;                 ] % x
+    | 11 -> [10;  1;             ] % xi
+    | 12 -> [10;  1;  1;         ] % xii
+    | 13 -> [10;  1;  1;  1;     ] % xiii
+    | 14 -> [10;  1;  5;         ] % xiv
+    | 15 -> [10;  5;             ] % xv
+    | 16 -> [10;  5;  1;         ] % xvi
+    | 17 -> [10;  5;  1;  1;     ] % xvii
+    | 18 -> [10;  5;  1;  1;  1; ] % xviii
+    | 19 -> [10;  1; 10;         ] % xix
+    | 20 -> [10; 10;             ] % xx
+    | 21 -> [10; 10;  1;         ] % xxi
+    | 22 -> [10; 10;  1;  1;     ] % xxii
+    | 23 -> [10; 10;  1;  1;  1; ] % xxiii
+    | 24 -> [10; 10;  1;  5;     ] % xxiv
+    | 25 -> [10; 10;  5;         ] % xxv
+    |  _ -> [ 0;  0;             ] % ??
+
+  let to-roman num =
+    embed-string
+      (string-unexplode
+        (List.map (fun i -> num-to-roman-char false i) (roman-seq num)))
+
+  let to-Roman num =
+    embed-string
+      (string-unexplode
+        (List.map (fun i -> num-to-roman-char true i) (roman-seq num)))
+
   let-block ctx +part it-title bt-inner =
+    let () = Ref.inc counter#part in
+    let idx = to-Roman (Ref.get counter#part) in
+
     let ctx-title = ctx |> set-font-cfg cfg-text#part-title-text in
     let ctx-num = ctx |> set-font-cfg cfg-text#part-title-num in
-    let ib-num = read-inline ctx-num {PART I} in
+    let ib-num = read-inline ctx-num {PART #idx;} in
     let ib-title = read-inline ctx-title it-title in
 
     let ib-gr = inline-graphics cfg-length#text-width 3pt 0pt (fun (x, y) -> [
@@ -161,10 +237,17 @@ end = struct
       +++ bb-title-overall +++ bb-inner
 
   let-block ctx +chapter it-title bt-inner =
+    let () = Ref.inc counter#chapter in
+    let () = Ref.set 0 counter#section in
+    let () = Ref.set 0 counter#subsection in
+    let () = Ref.set 0 counter#subsubsection in
+    let idx = embed-string (arabic (Ref.get counter#chapter)) in
+    let it-num = {Chapter #idx;} in
+
     let ctx-title = ctx |> set-font-cfg cfg-text#chapter-title in
     let leading-height = (get-font-size ctx-title) *' 0.5 in
     let title-inner-sep = (get-font-size ctx-title) *' 1.2 in
-    let ib-num = read-inline ctx-title {Chapter 1} in
+    let ib-num = read-inline ctx-title it-num in
     let ib-title = read-inline ctx-title it-title in
 
     let bb-num = line-break true false
@@ -180,8 +263,15 @@ end = struct
     clear-page +++ bb-num +++ bb-title +++ bb-inner
 
   let-block ctx +section it-title bt-inner =
+    let () = Ref.inc counter#section in
+    let () = Ref.set 0 counter#subsection in
+    let () = Ref.set 0 counter#subsubsection in
+    let idx-chp = embed-string (arabic (Ref.get counter#chapter)) in
+    let idx-sec = embed-string (arabic (Ref.get counter#section)) in
+    let it-num = {#idx-chp;.#idx-sec;} in
+
     let ctx-title = ctx |> set-font-cfg cfg-text#section-title in
-    let ib-num = read-inline ctx-title {1.1} in
+    let ib-num = read-inline ctx-title it-num in
     let ib-title = read-inline ctx-title it-title in
     let bb-title =
       line-break true false ctx-title
@@ -192,8 +282,15 @@ end = struct
     bb-title +++ bb-inner
 
   let-block ctx +subsection it-title bt-inner =
+    let () = Ref.inc counter#subsection in
+    let () = Ref.set 0 counter#subsubsection in
+    let idx-chp = embed-string (arabic (Ref.get counter#chapter)) in
+    let idx-sec = embed-string (arabic (Ref.get counter#section)) in
+    let idx-sse = embed-string (arabic (Ref.get counter#subsection)) in
+    let it-num = {#idx-chp;.#idx-sec;.#idx-sse;} in
+
     let ctx-title = ctx |> set-font-cfg cfg-text#subsection-title in
-    let ib-num = read-inline ctx-title {1.1.1} in
+    let ib-num = read-inline ctx-title it-num in
     let ib-title = read-inline ctx-title it-title in
     let bb-title =
       line-break true false ctx-title
@@ -221,7 +318,7 @@ end = struct
 
   let-block ctx +p it =
     line-break true true ctx
-      (read-inline ctx it ++ inline-fil)
+      (inline-skip cfg-length#p-indent ++ (read-inline ctx it) ++ inline-fil)
 
   let-inline ctx \emph it =
     let ctx-emph = ctx |> set-font-cfg-font cfg-text#emph in
