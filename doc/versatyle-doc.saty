@@ -2,12 +2,15 @@
 @require: code
 @import: ../src/versatyle
 
-
 Versatyle.document(|
   title = {|SATySFi + Versatyle |ドキュメント|};
   author = {|monaqa|};
   date = {|2020/2/2|};
 |)'<
+
++chapter{目次}<
+  +table-of-contents;
+>
 
 +part{はじめに}<
   +chapter{本書について}<

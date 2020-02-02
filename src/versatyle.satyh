@@ -26,6 +26,8 @@ module Versatyle : sig
       subsubsection: int ref;
     |)
 
+  direct +table-of-contents : [] block-cmd
+
   direct +part : [inline-text; block-text] block-cmd
   direct +chapter : [inline-text; block-text] block-cmd
   direct +section : [inline-text; block-text] block-cmd
@@ -82,20 +84,24 @@ end = struct
   |)
 
   let cfg-length = (|
+    % 595.275590551 * 841.88976378
+    paper = A4Paper;
     text-width = 440pt;
     text-height = 630pt;
-    text-origin-pos = (60pt, 100pt);
+    text-origin-pos = ((595.3pt -' 440pt) *' 0.5, (841.89pt -' 630pt) *' 0.5);
+    doc-title-space = (|
+      between-title-author = 20pt;
+      between-author-date = 20pt;
+    |);
     sec-num-skip = 10pt;
     sse-num-skip = 8pt;
     sss-num-skip = 5pt;
     p-indent = cfg-text#normal#size;
-    doc-title-space = (|
-      between-title-author = 20pt;
-      between-author-date = 20pt;
-    |)
   |)
 
   %% }}}
+
+  let (+-+) it1 it2 = {#it1;#it2;}
 
   %% convenient values/functions {{{
 
@@ -123,6 +129,31 @@ end = struct
         |> set-leading (fsize *' fcfg#leading-ratio)
 
   let no-pads = (0pt, 0pt, 0pt, 0pt)
+
+  type tocelment =
+    | TOCElementPart       of inline-text
+    | TOCElementChapter    of inline-text
+    | TOCElementSection    of inline-text
+    | TOCElementSubsection of inline-text
+
+  let read-tocelement ctx toc-e =
+    let ctx-toc =
+      match toc-e with
+      | TOCElementPart(_) -> ctx |> set-font-cfg cfg-text-title
+      | TOCElementChapter(_) -> ctx |> set-font-cfg cfg-text-title
+      | TOCElementSection(_) -> ctx |> set-font-cfg cfg-text#normal
+      | TOCElementSubsection(_) -> ctx |> set-font-cfg cfg-text#normal
+    in
+
+    let it = match toc-e with
+      | TOCElementPart(title) ->  {PART I. } +-+ title
+      | TOCElementChapter(title) -> {Chapter 1.} +-+ title
+      | TOCElementSection(title) -> title
+      | TOCElementSubsection(title) -> title
+    in
+
+    line-break false false ctx-toc (read-inline ctx-toc it)
+
   %% }}}
 
   %% math-cmd {{{
@@ -200,7 +231,22 @@ end = struct
 
     % }}}
 
-    page-break A4Paper pagecontf pagepartsf (bb-title-block +++ bb)
+    page-break cfg-length#paper pagecontf pagepartsf (bb-title-block +++ bb)
+
+  %% }}}
+
+  %% table-of-contents {{{
+
+  let-block ctx +table-of-contents =
+    let lst-toc = [
+      TOCElementPart({ほげ});
+      TOCElementChapter({ふが});
+      TOCElementSection({ぴよ});
+    ]
+    in
+    let lst-bb = List.map (read-tocelement ctx) lst-toc in
+
+    lst-bb |> List.fold-left (+++) block-nil
 
   %% }}}
 
