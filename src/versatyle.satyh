@@ -1,5 +1,6 @@
 %vim: fdm=marker
 
+@require: list
 @require: color
 @require: gr
 @require: base/ref
@@ -10,7 +11,12 @@ module Versatyle : sig
 
   %% signature {{{
 
-  val document : block-text -> document
+  val document : 'title-cfg -> block-text -> document
+    constraint 'title-cfg :: (|
+      title: inline-text list;
+      author: inline-text list;
+      date: inline-text list;
+    |)
 
   val counter : (|
       part: int ref;
@@ -64,6 +70,9 @@ end = struct
   let cfg-text = (|
     normal = cfg-text-normal;
     emph =cfg-text-emph;
+    doc-title = (| cfg-text-title with size = 28pt; par-margin-ratio = (0.4, 0.4) |);
+    doc-author = (| cfg-text-normal with size = 16pt; par-margin-ratio = (0.4, 0.4) |);
+    doc-date = (| cfg-text-normal with size = 12pt; par-margin-ratio = (0.4, 0.4) |);
     part-title-num = (| cfg-text-title with size = 16pt; par-margin-ratio = (0.8, 0.8)|);
     part-title-text = (| cfg-text-title with size = 28pt; par-margin-ratio = (0.8, 0.8)|);
     chapter-title = (| cfg-text-title with size = 28pt; |);
@@ -80,6 +89,10 @@ end = struct
     sse-num-skip = 8pt;
     sss-num-skip = 5pt;
     p-indent = cfg-text#normal#size;
+    doc-title-space = (|
+      between-title-author = 20pt;
+      between-author-date = 20pt;
+    |)
   |)
 
   %% }}}
@@ -121,7 +134,9 @@ end = struct
 
   %% document {{{
 
-  let document bt =
+  let document record bt =
+
+    % initial context {{{
 
     let ctx =
       get-initial-context cfg-length#text-width (command \math)
@@ -134,7 +149,40 @@ end = struct
         |> set-hyphen-penalty 100
     in
 
+    % }}}
+
+    % title {{{
+
+    let bb-title-block = 
+
+      let make-centered-lines ctx it-lst =
+        let to-centered-bb it =
+          line-break false false ctx
+          (inline-fil ++ (read-inline ctx it) ++ inline-fil)
+        in
+        (List.map to-centered-bb it-lst) |> List.fold-left (+++) block-nil
+      in
+
+      let ctx-title = ctx |> set-font-cfg cfg-text#doc-title in
+      let ctx-author = ctx |> set-font-cfg cfg-text#doc-author in
+      let ctx-date = ctx |> set-font-cfg cfg-text#doc-date in
+
+      let bb-title = make-centered-lines ctx-title record#title in
+      let bb-author = make-centered-lines ctx-author record#author in
+      let bb-date = make-centered-lines ctx-date record#date in
+
+      bb-title +++ (block-skip cfg-length#doc-title-space#between-title-author)
+        +++ bb-author +++ (block-skip cfg-length#doc-title-space#between-author-date)
+          +++ bb-date
+
+    in
+
+    % }}}
+
     let bb = read-block ctx bt in
+
+    % header/footer {{{
+
     let pagecontf _ =
       (|
         text-origin = cfg-length#text-origin-pos;
@@ -149,7 +197,10 @@ end = struct
         footer-content = block-nil;
       |)
     in
-    page-break A4Paper pagecontf pagepartsf bb
+
+    % }}}
+
+    page-break A4Paper pagecontf pagepartsf (bb-title-block +++ bb)
 
   %% }}}
 

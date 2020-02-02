@@ -2,16 +2,18 @@
 @require: code
 @import: ../src/versatyle
 
-let (++|) a b = {#a;#b;}
-in
 
-Versatyle.document'<
+Versatyle.document(|
+  title = {|SATySFi + Versatyle |ドキュメント|};
+  author = {|monaqa|};
+  date = {|2020/2/2|};
+|)'<
 
 +part{はじめに}<
   +chapter{本書について}<
     +p{
       本書は，SATySFi の汎用的なクラスファイルである
-      Versatyle パッケージの使用及び使い方を記したものです．
+      Versatyle パッケージの仕様及び使い方を記したものです．
       本書自身も Versatyle を用いて書かれています．
       本書は，単なる Versatyle パッケージの使用法にとどまらず，
       SATySFi を用いた一般的なドキュメント作成の仕方，
