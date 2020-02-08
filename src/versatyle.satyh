@@ -5,6 +5,7 @@
 @require: gr
 @require: base/ref
 @require: base/map
+@import: math
 
 
 module Versatyle : sig

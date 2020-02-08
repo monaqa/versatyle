@@ -1,4 +1,4 @@
-@require: enumitem
+@require: enumitem/enumitem
 @require: code
 @import: ../src/versatyle
 
@@ -59,6 +59,59 @@ Versatyle.document(|
         }
       >
 
+    >
+  >
+
+  +chapter{数式}<
+    +p{
+    Versatyle では， SATySFi の標準である math パッケージを元に
+    便利な変更を付け加えた \code(`versatyle/math`); パッケージを用意しています．
+    \code(`versatyle/versatyle`); クラスファイルを読み込めば自動で読み込まれますが，
+    クラスファイルを使わない場合でも，単品で読み込むことができます．
+    }
+    +section{別行立て数式}<
+      +p{
+        \code(`+eqn`); は特に math パッケージから変えていません．
+        \code(`+align`); はインターフェースをはじめとして種々の変更を加え，
+        ラベル付けができるようにしました．
+        以下のような数式を書くことができます．
+        ラベルを指定することもできます．
+      }
+
+      +align?:[{(1)}; {(very long long label)}](${
+      | \frac{d}{dx}f\(x\) |= p
+      |        |= \int_{0}^{\pi} p\(x\)
+      |});
+
+      +p{
+         \code(`+alignat`); は複数の数式を並べるのに便利です．
+      }
+
+      +alignat(2)(${
+      | f\(x\) |= p       | g\(x\) |= q
+      |        |= p\(x\)  |        |= p\(x\)
+      |});
+
+
+    >
+    +section{行列}<
+
+      +p{
+        行列を書くこともできます．
+      }
+
+      +align(${
+      | A |= \pmatrix!(2){| 1 | 2 | 3 | 4 |}^2
+      |   |= \pmatrix!(2){| 7 | 10 | 15 | 22 |}
+      |});
+    >
+  >
+
+  +chapter{図表}<
+    +section{図の挿入}<
+    >
+
+    +section{表の挿入}<
     >
   >
 >
