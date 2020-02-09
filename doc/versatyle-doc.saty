@@ -74,9 +74,15 @@ Versatyle.document(|
         \code(`+eqn`); は特に math パッケージから変えていません．
         \code(`+align`); はインターフェースをはじめとして種々の変更を加え，
         ラベル付けができるようにしました．
+        また， LaTeX ではおなじみの \code(`+gather`); を追加しました．
         以下のような数式を書くことができます．
         ラベルを指定することもできます．
       }
+
+      +gather(${
+      | \(x^2 + y^2\)\(a^2 + b^2\) = \(ax + by\)^2 + \(ay - bx\)^2,
+      | \(x + a\)\(x + b\) = x^2 + \(a + b\) x + ab
+      |});
 
       +align?:[{(1)}; {(very long long label)}](${
       | \frac{d}{dx}f\(x\) |= p
