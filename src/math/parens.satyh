@@ -1,0 +1,99 @@
+@require: math
+
+module VersatyleMathParens : sig
+
+  direct \p : [math;] math-cmd
+
+  val paren-left : paren
+  val paren-right : paren
+
+end = struct
+
+  % 便利関数 {{{
+  
+  let minus l = 0pt -' l
+
+  let half-length hgt dpt hgtaxis fontsize =
+    let minhalflen = fontsize *' 0.5 in
+    % let lenappend = fontsize *' 0.1 in
+      length-max minhalflen (length-max (hgt -' hgtaxis) (hgtaxis +' dpt))
+
+  % Open の場合左端を， Close の場合右端を原点として描かれた括弧を，
+  % 適切な場所に原点が来るように shift させる．
+  let adjust-paren-path front-space end-space hgtaxis ppath =
+    let ((xleft, _), (xright, _)) = get-path-bbox ppath in
+    let wid = front-space +' (xright -' xleft) +' end-space in
+    (ppath |> shift-path (front-space -' xleft, hgtaxis), wid)
+
+  % 様々な条件及び path を draw してくれる関数を受け取って paren を作成する．
+  % pathf: fontsize, 縦方向の大きさを受け取って，括弧の path 及び横幅を返す関数
+  % hgt: 括弧の中身の高さ
+  % dpt: 括弧の中身の深さ
+  % hgtaxis: 基準となる軸の位置
+  % fsize: font size
+  % color: 括弧の色
+  let genparen pathf kerninfo front-space-r end-space-r hgt dpt hgtaxis fsize color =
+
+        let halflen = half-length hgt dpt hgtaxis fsize in
+        let vlen-paren = halflen in
+        let front-space = fsize *' front-space-r in
+        let end-space = fsize *' end-space-r in
+        let (path-paren, wid-paren) =
+          pathf fsize vlen-paren
+            |> adjust-paren-path front-space end-space hgtaxis
+        in
+        let gr pt = [fill color (path-paren |> shift-path pt)] in
+
+        let hgt-paren = halflen +' hgtaxis in
+        let dpt-paren = halflen -' hgtaxis in
+        (inline-graphics wid-paren hgt-paren dpt-paren gr, kerninfo)
+
+  % }}}
+
+  let draw-paren-path direction fsize vlen =
+
+    % 基準となる横の位置 (h) 及び 縦の位置 (v) の座標．
+    let h0 = 0pt in
+    let ha = vlen *' 0.01 +' fsize *' 0.05 in
+    let hb = ha +' vlen *' 0.25 in
+    let hdelta = fsize *' 0.025 in
+    let v0 = 0pt in
+    let va = vlen in
+    let vdelta = fsize *' 0.025 in
+
+    % 結ぶことになる点の座標．
+    let (x0, y0) = (0pt, 0pt) in
+    let (x3, y3) = (ha *' direction, 0pt) in
+    let (x1, y1) = (hb *' direction, va) in
+    let (x5, y5) = (hb *' direction, minus va) in
+    let (x2, y2) = (x1 +' hdelta *' direction, y1 -' vdelta) in
+    let (x4, y4) = (x5 +' hdelta *' direction, y5 +' vdelta) in
+
+    % Bezier 曲線を描くときのハンドル
+    let (p0in , q0in ) = (0pt, minus vlen *' 0.4) in
+    let (p0out, q0out) = (0pt,       vlen *' 0.4) in
+    let (p3in , q3in ) = (0pt,       vlen *' 0.5) in
+    let (p3out, q3out) = (0pt, minus vlen *' 0.5) in
+    let (p1in , q1in ) = ((minus hb *' 0.75) *' direction, minus vlen *' 0.3) in
+    let (p5out, q5out) = ((minus hb *' 0.75) *' direction,       vlen *' 0.3) in
+    let (p2out, q2out) = ((minus vlen *' 0.125) *' direction, minus vlen *' 0.2) in
+    let (p4in , q4in ) = ((minus vlen *' 0.125) *' direction,       vlen *' 0.2) in
+
+    start-path (x0, y0)
+      |> bezier-to (x0 +' p0out, y0 +' q0out) (x1 +' p1in, y1 +' q1in) (x1, y1)
+      |> line-to (x2, y2)
+      |> bezier-to (x2 +' p2out, y2 +' q2out) (x3 +' p3in, y3 +' q3in) (x3, y3)
+      |> bezier-to (x3 +' p3out, y3 +' q3out) (x4 +' p4in, y4 +' q4in) (x4, y4)
+      |> line-to (x5, y5)
+      |> close-with-bezier (x5 +' p5out, y5 +' q5out) (x0 +' p0in, y0 +' q0in)
+      |> shift-path ((fsize *' 0.1) *' direction, 0pt)
+    % path
+
+
+  let paren-left = genparen (draw-paren-path 1.0) (fun _ -> 0pt) 0.1 0.08
+
+  let paren-right = genparen (draw-paren-path (0.0 -. 1.0)) (fun _ -> 0pt) 0.08 0.1
+
+  let-math \p = math-paren paren-left paren-right
+
+end

@@ -84,7 +84,7 @@ Versatyle.document(|
       | \(x + a\)\(x + b\) = x^2 + \(a + b\) x + ab
       |});
 
-      +align?:[{(1)}; {(very long long label)}](${
+      +eqnalign?:[{(1)}; {(very long long label)}](${
       | \frac{d}{dx}f\(x\) |= p
       |        |= \int_{0}^{\pi} p\(x\)
       |});
@@ -93,7 +93,7 @@ Versatyle.document(|
          \code(`+alignat`); は複数の数式を並べるのに便利です．
       }
 
-      +alignat(2)(${
+      +eqnalignat(2)(${
       | f\(x\) |= p       | g\(x\) |= q
       |        |= p\(x\)  |        |= p\(x\)
       |});
@@ -106,11 +106,132 @@ Versatyle.document(|
         行列を書くこともできます．
       }
 
-      +align(${
+      +eqnalign(${
       | A |= \pmatrix!(2){| 1 | 2 | 3 | 4 |}^2
       |   |= \pmatrix!(2){| 7 | 10 | 15 | 22 |}
       |});
     >
+
+    +section{アクセント}<
+      +p{
+        アクセント記号を書くことが出来ます．
+      }
+      +gather(${
+      | \bar{a},
+        \bar{b},
+        \bar{c},
+        \bar{d},
+        \bar{e},
+        \bar{f},
+        \bar{g},
+        \bar{h},
+        \bar{i},
+        \bar{j},
+        \bar{k},
+        \bar{l},
+        \bar{m},
+        \bar{n},
+        \bar{o},
+        \bar{p},
+        \bar{q},
+        \bar{r},
+        \bar{s},
+        \bar{t},
+        \bar{u},
+        \bar{v},
+        \bar{w},
+        \bar{x},
+        \bar{y},
+        \bar{z},
+      | \bar{A},
+        \bar{B},
+        \bar{C},
+        \bar{D},
+        \bar{E},
+        \bar{F},
+        \bar{G},
+        \bar{H},
+        \bar{I},
+        \bar{J},
+        \bar{K},
+        \bar{L},
+        \bar{M},
+        \bar{N},
+        \bar{O},
+        \bar{P},
+        \bar{Q},
+        \bar{R},
+        \bar{S},
+        \bar{T},
+        \bar{U},
+        \bar{V},
+        \bar{W},
+        \bar{X},
+        \bar{Y},
+        \bar{Z},
+      | \bar{\alpha}  ,
+        \bar{\beta}   ,
+        \bar{\gamma}  ,
+        \bar{\delta}  ,
+        \bar{\epsilon},
+        \bar{\zeta}   ,
+        \bar{\eta}    ,
+        \bar{\theta}  ,
+        \bar{\iota}   ,
+        \bar{\kappa}  ,
+        \bar{\lambda} ,
+        \bar{\mu}     ,
+        \bar{\nu}     ,
+        \bar{\xi}     ,
+        \bar{\omicron},
+        \bar{\pi}     ,
+        \bar{\rho}    ,
+        \bar{\sigma}  ,
+        \bar{\tau}    ,
+        \bar{\upsilon},
+        \bar{\phi}    ,
+        \bar{\chi}    ,
+        \bar{\psi}    ,
+        \bar{\omega}  ,
+      | \hat{x}, \tilde{x}, \bar{x}, \adot{x}, \ddot{x}
+      |});
+    >
+
+    +section{括弧類}<
+      +p{
+        SATySFi において，括弧類は基本的に graphics によって描画されます．
+        たとえば \code(`\paren`); を用いると，
+        中身の高さに応じて大きさが変化するカッコを入れることが出来ます．
+        SATySFi では\code(`\(\)`); を数式中に用いることで
+        フォントに由来する括弧を表示することが出来ますが，
+        大きさは自動で変化しません．
+      }
+      +p{
+        Versatyle では，フォント由来の括弧を出力するコマンドとして，
+        % \code(`\p1`);, \code(`\p2`); を提供します．
+      }
+      +math(${
+        \paren{x + \frac{a}{2}} \paren{\sqrt{x + b}} = x^2 + \paren{a + b}x + ab
+      });
+      +math(${
+        \p{x + a} \p{x + b} = x^2 + \p{a + b}x + ab
+      });
+
+      +eqnalign(
+        let-math \font-paren inner = ${\(#inner\)} in
+        ${
+        | x^3 + 4x^2 - 3x + 1 |= \paren{\paren{\paren{x + 4} x} - 3} x + 1
+        | x^3 + 4x^2 - 3x + 1 |= \font-paren{\font-paren{\font-paren{x + 4} x} - 3} x + 1
+        | x^3 + 4x^2 - 3x + 1 |= \p{\p{\p{x + 4} x} - 3} x + 1
+        |});
+      +eqnalign(${
+      | x = | \p{ x + 1 }
+      | x = | \p{ \sqrt{x + 1} }
+      | x = | \p{x + \frac{1}{2} }
+      | x = | \p{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }
+      |});
+    >
+
   >
 
   +chapter{図表}<
