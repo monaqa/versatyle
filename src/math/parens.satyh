@@ -3,7 +3,11 @@ module VersatyleMathParens : sig
   direct \genparen : [(bool -> paren)?; (bool -> paren); math;] math-cmd
 
   val paren : bool -> paren
+  val brace : bool -> paren
+  val empty-paren : bool -> paren
+
   direct \p : [math;] math-cmd
+  direct \b : [math;] math-cmd
 
 end = struct
 
@@ -59,6 +63,8 @@ end = struct
     | Some(paren) -> math-paren (paren true) (p false) inner
     | None -> math-paren (p true) (p false) inner
 
+  let empty-paren _ _ _ _ _ _ = (inline-nil, (fun _ -> 0pt))
+
   % paren {{{
 
   let draw-paren-path fsize vlen isleft =
@@ -99,7 +105,6 @@ end = struct
       |> line-to (x5, y5)
       |> close-with-bezier (x5 +' p5out, y5 +' q5out) (x0 +' p0in, y0 +' q0in)
       |> shift-path ((fsize *' 0.1) *' direction, 0pt)
-    % path
 
   let paren = genparen draw-paren-path (fun _ -> 0pt)
 
@@ -107,5 +112,81 @@ end = struct
 
   % }}}
 
+  % brace {{{
+
+  let draw-brace-path fsize vlen isleft =
+    let direction = if isleft then 1.0 else 0.0 -. 1.0 in
+
+    % 基準となる横の位置 (h) 及び 縦の位置 (v) の座標．
+    let h0 = 0pt in
+    let ha = fsize *' 0.10 in
+    let hb = fsize *' 0.15 in
+    let hc = fsize *' 0.225 in
+    let hd = fsize *' 0.325 in
+    let hdelta = fsize *' 0.015 in
+    let v0 = 0pt in
+    let va = fsize *' 0.15 in
+    let vb = vlen *' 0.98 -' fsize *' 0.05 in
+    let vc = vlen +' fsize *' 0.05 in
+    let vdelta = fsize *' 0.025 in
+
+    % 結ぶことになる点の座標．
+    let (x00, y00) = (0pt, 0pt) in
+    let (x01, y01) = (hb *' direction, va) in
+    let (x13, y13) = (hb *' direction, minus va) in
+    let (x02, y02) = (hb *' direction, vb) in
+    let (x12, y12) = (hb *' direction, minus vb) in
+    let (x03, y03) = (hd *' direction, vc) in
+    let (x11, y11) = (hd *' direction, minus vc) in
+    let (x04, y04) = (x03 +' hdelta *' direction, y03 -' vdelta) in
+    let (x10, y10) = (x03 +' hdelta *' direction, minus y03 +' vdelta) in
+    let (x05, y05) = (hc *' direction, vb) in
+    let (x09, y09) = (hc *' direction, minus vb) in
+    let (x06, y06) = (hc *' direction, va) in
+    let (x08, y08) = (hc *' direction, minus va) in
+    let (x07, y07) = (ha *' direction, 0pt) in
+
+    % Bezier 曲線を描くときのハンドル
+    let (p00in , q00in ) = ((hb *' 0.15) *' direction, minus va *' 0.1) in
+    let (p00out, q00out) = ((hb *' 0.15) *' direction,       va *' 0.1) in
+    let (p07in , q07in ) = ((hb *' 0.10) *' direction,       va *' 0.1) in
+    let (p07out, q07out) = ((hb *' 0.10) *' direction, minus va *' 0.1) in
+
+    let (p01in , q01in ) = (0pt, minus fsize *' 0.10) in
+    let (p13out, q13out) = (0pt,       fsize *' 0.10) in
+    let (p06out, q06out) = (0pt, minus fsize *' 0.10) in
+    let (p08in , q08in ) = (0pt,       fsize *' 0.10) in
+
+    let (p02out, q02out) = (0pt,       fsize *' 0.10) in
+    let (p12in , q12in ) = (0pt, minus fsize *' 0.10) in
+    let (p05in , q05in ) = (0pt,       fsize *' 0.10) in
+    let (p09out, q09out) = (0pt, minus fsize *' 0.10) in
+
+    let (p03in , q03in ) = (0pt, 0pt) in
+    let (p11out, q11out) = (0pt, 0pt) in
+    let (p04out, q04out) = (0pt, 0pt) in
+    let (p10in , q10in ) = (0pt, 0pt) in
+
+    start-path (x00, y00)
+      |> bezier-to (x00 +' p00out, y00 +' q00out) (x01 +' p01in, y01 +' q01in) (x01, y01)
+      |> line-to (x02, y02)
+      |> bezier-to (x02 +' p02out, y02 +' q02out) (x03 +' p03in, y03 +' q03in) (x03, y03)
+      |> line-to (x04, y04)
+      |> bezier-to (x04 +' p04out, y04 +' q04out) (x05 +' p05in, y05 +' q05in) (x05, y05)
+      |> line-to (x06, y06)
+      |> bezier-to (x06 +' p06out, y06 +' q06out) (x07 +' p07in, y07 +' q07in) (x07, y07)
+      |> bezier-to (x07 +' p07out, y07 +' q07out) (x08 +' p08in, y08 +' q08in) (x08, y08)
+      |> line-to (x09, y09)
+      |> bezier-to (x09 +' p09out, y09 +' q09out) (x10 +' p10in, y10 +' q10in) (x10, y10)
+      |> line-to (x11, y11)
+      |> bezier-to (x11 +' p11out, y11 +' q11out) (x12 +' p12in, y12 +' q12in) (x12, y12)
+      |> line-to (x13, y13)
+      |> close-with-bezier (x13 +' p13out, y13 +' q13out) (x00 +' p00in, y00 +' q00in)
+
+  let brace = genparen draw-brace-path (fun _ -> 0pt)
+
+  let-math \b = math-paren (brace true) (brace false)
+
+  % }}}
 
 end

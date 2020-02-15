@@ -1,7 +1,11 @@
 @require: enumitem/enumitem
+@require: easytable/easytable-dirtyhack
 @require: code
 @import: ../src/versatyle
 
+let-math \newparen inner = ${\p{#inner}}
+let-math \newbrace inner = ${\b{#inner}}
+in
 
 Versatyle.document(|
   title = {|SATySFi + Versatyle |ドキュメント|};
@@ -224,6 +228,7 @@ Versatyle.document(|
         | x^3 + 4x^2 - 3x + 1 |= \font-paren{\font-paren{\font-paren{x + 4} x} - 3} x + 1
         | x^3 + 4x^2 - 3x + 1 |= \p{\p{\p{x + 4} x} - 3} x + 1
         |});
+
       +eqnalign(${
       | x = | \p{ x + 1 }
       | x = | \p{ \sqrt{x + 1} }
@@ -231,6 +236,53 @@ Versatyle.document(|
       | x = | \p{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }
       | x = | \genparen?:!(VersatyleMathParens.paren)!(VersatyleMathParens.paren){x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }
       |});
+
+      % math パッケージの brace
+      +eqnalign(${
+      | x = | \brace{ x + 1 }
+      | x = | \brace{ \sqrt{x + 1} }
+      | x = | \brace{x + \frac{1}{2} }
+      | x = | \brace{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }
+      |});
+
+      +eqnalign(${
+      | x = | \b{ x + 1 } \{x + 1\}
+      | x = | \b{ \sqrt{x + 1} }
+      | x = | \b{x + \frac{1}{2} }
+      | x = | \b{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }
+      |});
+
+      +p{
+        \list-table[r;l;]{
+          * ** コマンド
+            ** 組版結果
+          * ** \code(`\(\)`);
+            ** \math(
+                 let-math \font-paren inner = ${\(#inner\)} in
+                 ${x^3 + 4x^2 - 3x + 1 = \font-paren{\font-paren{\font-paren{x + 4} x} - 3} x + 1}
+               );
+          * ** \code(`\paren{}`);
+            ** ${x^3 + 4x^2 - 3x + 1 = \paren{\paren{\paren{x + 4} x} - 3} x + 1}
+          * ** \code(`\newparen{}`);
+            ** ${x^3 + 4x^2 - 3x + 1 = \newparen{\newparen{\newparen{x + 4} x} - 3} x + 1}
+        }
+      }
+
+      +p{
+        \list-table[cw 100pt;cw 100pt;]{
+          * ** 従来の括弧
+            ** 新しい括弧
+          * ** ${\brace{ x + 1 }}
+            ** ${\newbrace{ x + 1 }}
+          * ** ${\brace{ \sqrt{x + 1} }}
+            ** ${\newbrace{ \sqrt{x + 1} }}
+          * ** ${\brace{x + \frac{1}{2} }}
+            ** ${\newbrace{x + \frac{1}{2} }}
+          * ** ${\brace{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }}
+            ** ${\newbrace{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }}
+        }
+      }
+
     >
 
   >
