@@ -1,11 +1,9 @@
-@require: math
-
 module VersatyleMathParens : sig
 
-  direct \p : [math;] math-cmd
+  direct \genparen : [(bool -> paren)?; (bool -> paren); math;] math-cmd
 
-  val paren-left : paren
-  val paren-right : paren
+  val paren : bool -> paren
+  direct \p : [math;] math-cmd
 
 end = struct
 
@@ -26,20 +24,22 @@ end = struct
     (ppath |> shift-path (front-space -' xleft, hgtaxis), wid)
 
   % 様々な条件及び path を draw してくれる関数を受け取って paren を作成する．
-  % pathf: fontsize, 縦方向の大きさを受け取って，括弧の path 及び横幅を返す関数
+  % pathf: fontsize, 縦方向の大きさ， isleft を受け取って，括弧の path 及び横幅を返す関数
+  % kerninfo: 添字のカーニング量を定める関数．
+  % isleft: 開き括弧なら true，閉じ括弧なら false.
   % hgt: 括弧の中身の高さ
   % dpt: 括弧の中身の深さ
   % hgtaxis: 基準となる軸の位置
   % fsize: font size
   % color: 括弧の色
-  let genparen pathf kerninfo front-space-r end-space-r hgt dpt hgtaxis fsize color =
+  let genparen pathf kerninfo isleft hgt dpt hgtaxis fsize color =
 
         let halflen = half-length hgt dpt hgtaxis fsize in
         let vlen-paren = halflen in
-        let front-space = fsize *' front-space-r in
-        let end-space = fsize *' end-space-r in
+        let front-space = fsize *' (if isleft then 0.10 else 0.08) in
+        let end-space   = fsize *' (if isleft then 0.08 else 0.10) in
         let (path-paren, wid-paren) =
-          pathf fsize vlen-paren
+          pathf fsize vlen-paren isleft
             |> adjust-paren-path front-space end-space hgtaxis
         in
         let gr pt = [fill color (path-paren |> shift-path pt)] in
@@ -50,7 +50,19 @@ end = struct
 
   % }}}
 
-  let draw-paren-path direction fsize vlen =
+  % 一般的な括弧を描く．
+  % \genparen!(paren){inner} とすると， inner を paren で囲む．
+  % \genparen?:!(paren1)!(paren2){inner} とすると，inner を
+  % 開き括弧については paren1 で，閉じ括弧については paren2 で囲む．
+  let-math \genparen ?:po p inner =
+    match po with
+    | Some(paren) -> math-paren (paren true) (p false) inner
+    | None -> math-paren (p true) (p false) inner
+
+  % paren {{{
+
+  let draw-paren-path fsize vlen isleft =
+    let direction = if isleft then 1.0 else 0.0 -. 1.0 in
 
     % 基準となる横の位置 (h) 及び 縦の位置 (v) の座標．
     let h0 = 0pt in
@@ -89,11 +101,11 @@ end = struct
       |> shift-path ((fsize *' 0.1) *' direction, 0pt)
     % path
 
+  let paren = genparen draw-paren-path (fun _ -> 0pt)
 
-  let paren-left = genparen (draw-paren-path 1.0) (fun _ -> 0pt) 0.1 0.08
+  let-math \p = math-paren (paren true) (paren false)
 
-  let paren-right = genparen (draw-paren-path (0.0 -. 1.0)) (fun _ -> 0pt) 0.08 0.1
+  % }}}
 
-  let-math \p = math-paren paren-left paren-right
 
 end

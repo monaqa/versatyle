@@ -229,6 +229,7 @@ Versatyle.document(|
       | x = | \p{ \sqrt{x + 1} }
       | x = | \p{x + \frac{1}{2} }
       | x = | \p{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }
+      | x = | \genparen?:!(VersatyleMathParens.paren)!(VersatyleMathParens.paren){x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }
       |});
     >
 
