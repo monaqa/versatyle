@@ -3,12 +3,8 @@
 @require: code
 @import: ../src/versatyle
 
-let-math \newparen inner = ${\p{#inner}}
-let-math \newbrace inner = ${\b{#inner}}
-in
-
 Versatyle.document(|
-  title = {|SATySFi + Versatyle |ドキュメント|};
+  title = {|\SATySFi; + Versatyle |ドキュメント|};
   author = {|monaqa|};
   date = {|2020/2/2|};
 |)'<
@@ -16,22 +12,22 @@ Versatyle.document(|
 +part{はじめに}<
   +chapter{本書について}<
     +p{
-      本書は，SATySFi の汎用的なクラスファイルである
+      本書は，\SATySFi; の汎用的なクラスファイルである
       Versatyle パッケージの仕様及び使い方を記したものです．
       本書自身も Versatyle を用いて書かれています．
       本書は，単なる Versatyle パッケージの使用法にとどまらず，
-      SATySFi を用いた一般的なドキュメント作成の仕方，
+      \SATySFi; を用いた一般的なドキュメント作成の仕方，
       文書設定やクラスファイル，パッケージのカスタマイズ方法などについても述べます．
     }
     +section{本書の構成}<
       +p{
         本書は3部構成です．
-        第一部では，まず SATySFi での文書作成において欠かせない基本的な知識を説明します．
+        第一部では，まず \SATySFi; での文書作成において欠かせない基本的な知識を説明します．
         第二部では，Versatyle を用いた文書作成について，
-        SATySFi のマークアップ言語としての側面に焦点を当てつつ説明します．
+        \SATySFi; のマークアップ言語としての側面に焦点を当てつつ説明します．
         第三部では，独自のコマンドを定義したり，
         パッケージやクラスファイルを作成及びカスタマイズしたりする際に
-        必要な知識である， SATySFi のプログラミング言語としての側面を説明します．
+        必要な知識である， \SATySFi; のプログラミング言語としての側面を説明します．
       }
     >
   >
@@ -54,7 +50,7 @@ Versatyle.document(|
       }
 
       +p{
-        SATySFi では，これらを入れ子構造で記述します．
+        \SATySFi; では，これらを入れ子構造で記述します．
       }
 
       +subsection{部 (part)}<
@@ -68,7 +64,7 @@ Versatyle.document(|
 
   +chapter{数式}<
     +p{
-    Versatyle では， SATySFi の標準である math パッケージを元に
+    Versatyle では， \SATySFi; の標準である math パッケージを元に
     便利な変更を付け加えた \code(`versatyle/math`); パッケージを用意しています．
     \code(`versatyle/versatyle`); クラスファイルを読み込めば自動で読み込まれますが，
     クラスファイルを使わない場合でも，単品で読み込むことができます．
@@ -203,54 +199,16 @@ Versatyle.document(|
 
     +section{括弧類}<
       +p{
-        SATySFi において，括弧類は基本的に graphics によって描画されます．
+        \SATySFi; において，括弧類は基本的に graphics によって描画されます．
         たとえば \code(`\paren`); を用いると，
         中身の高さに応じて大きさが変化するカッコを入れることが出来ます．
-        SATySFi では\code(`\(\)`); を数式中に用いることで
+        \SATySFi; では\code(`\(\)`); を数式中に用いることで
         フォントに由来する括弧を表示することが出来ますが，
         大きさは自動で変化しません．
       }
       +p{
-        Versatyle では，フォント由来の括弧を出力するコマンドとして，
-        % \code(`\p1`);, \code(`\p2`); を提供します．
+        Versatyle では，新たな括弧として \code(`\p`);, \code(`\b`); を提供します．
       }
-      +math(${
-        \paren{x + \frac{a}{2}} \paren{\sqrt{x + b}} = x^2 + \paren{a + b}x + ab
-      });
-      +math(${
-        \p{x + a} \p{x + b} = x^2 + \p{a + b}x + ab
-      });
-
-      +eqnalign(
-        let-math \font-paren inner = ${\(#inner\)} in
-        ${
-        | x^3 + 4x^2 - 3x + 1 |= \paren{\paren{\paren{x + 4} x} - 3} x + 1
-        | x^3 + 4x^2 - 3x + 1 |= \font-paren{\font-paren{\font-paren{x + 4} x} - 3} x + 1
-        | x^3 + 4x^2 - 3x + 1 |= \p{\p{\p{x + 4} x} - 3} x + 1
-        |});
-
-      +eqnalign(${
-      | x = | \p{ x + 1 }
-      | x = | \p{ \sqrt{x + 1} }
-      | x = | \p{x + \frac{1}{2} }
-      | x = | \p{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }
-      | x = | \genparen?:!(VersatyleMathParens.paren)!(VersatyleMathParens.paren){x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }
-      |});
-
-      % math パッケージの brace
-      +eqnalign(${
-      | x = | \brace{ x + 1 }
-      | x = | \brace{ \sqrt{x + 1} }
-      | x = | \brace{x + \frac{1}{2} }
-      | x = | \brace{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }
-      |});
-
-      +eqnalign(${
-      | x = | \b{ x + 1 } \{x + 1\}
-      | x = | \b{ \sqrt{x + 1} }
-      | x = | \b{x + \frac{1}{2} }
-      | x = | \b{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }
-      |});
 
       +p{
         \list-table[r;l;]{
@@ -263,8 +221,8 @@ Versatyle.document(|
                );
           * ** \code(`\paren{}`);
             ** ${x^3 + 4x^2 - 3x + 1 = \paren{\paren{\paren{x + 4} x} - 3} x + 1}
-          * ** \code(`\newparen{}`);
-            ** ${x^3 + 4x^2 - 3x + 1 = \newparen{\newparen{\newparen{x + 4} x} - 3} x + 1}
+          * ** \code(`\p{}`);
+            ** ${x^3 + 4x^2 - 3x + 1 = \p{\p{\p{x + 4} x} - 3} x + 1}
         }
       }
 
@@ -273,13 +231,13 @@ Versatyle.document(|
           * ** 従来の括弧
             ** 新しい括弧
           * ** ${\brace{ x + 1 }}
-            ** ${\newbrace{ x + 1 }}
+            ** ${\b{ x + 1 }}
           * ** ${\brace{ \sqrt{x + 1} }}
-            ** ${\newbrace{ \sqrt{x + 1} }}
+            ** ${\b{ \sqrt{x + 1} }}
           * ** ${\brace{x + \frac{1}{2} }}
-            ** ${\newbrace{x + \frac{1}{2} }}
+            ** ${\b{x + \frac{1}{2} }}
           * ** ${\brace{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }}
-            ** ${\newbrace{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }}
+            ** ${\b{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }}
         }
       }
 
