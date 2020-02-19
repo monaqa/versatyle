@@ -241,6 +241,16 @@ Versatyle.document(|
         }
       }
 
+      +p{あとは絶対値記号もあります． ${\Abs{\Abs{x}}\cdot \abs{\abs{x}}}}
+
+      +eqnalign(${
+      | | \Abs{\Abs{\Abs{xyh} + 1} + \frac{1}{2}}
+      | | \B{\B{x}}
+      | | \sqbracket{\sqbracket{x}}
+      | | \Angle{x}
+      | | \angle-bracket{x}
+      |});
+
     >
 
   >
