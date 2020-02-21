@@ -6,6 +6,7 @@
 @require: base/ref
 @require: base/map
 @import: math
+@import: counter
 
 
 module Versatyle : sig
@@ -19,13 +20,11 @@ module Versatyle : sig
       date: inline-text list;
     |)
 
-  val counter : (|
-      part: int ref;
-      chapter: int ref;
-      section: int ref;
-      subsection: int ref;
-      subsubsection: int ref;
-    |)
+  val counter-part : Counter.t
+  val counter-chp  : Counter.t
+  val counter-sec  : Counter.t
+  val counter-sse  : Counter.t
+  val counter-sss  : Counter.t
 
   direct +part : [inline-text; block-text] block-cmd
   direct +chapter : [inline-text; block-text] block-cmd
@@ -207,13 +206,11 @@ end = struct
 
   %% section {{{
 
-    let counter = (|
-      part = Ref.make 0;
-      chapter = Ref.make 0;
-      section = Ref.make 0;
-      subsection = Ref.make 0;
-      subsubsection = Ref.make 0;
-    |)
+  let counter-sss = Counter.make 0 []
+  let counter-sse = Counter.make 0 [counter-sss;]
+  let counter-sec = Counter.make 0 [counter-sse;]
+  let counter-chp = Counter.make 0 [counter-sec;]
+  let counter-part = Counter.make 0 []
 
   let num-to-roman-char capital num =
     let unic-point = match num with
@@ -263,8 +260,7 @@ end = struct
         (List.map (fun i -> num-to-roman-char true i) (roman-seq num)))
 
   let-block ctx +part it-title bt-inner =
-    let () = Ref.inc counter#part in
-    let idx = to-Roman (Ref.get counter#part) in
+    let idx = to-Roman (Counter.inc counter-part) in
 
     let ctx-title = ctx |> set-font-cfg cfg-text#part-title-text in
     let ctx-num = ctx |> set-font-cfg cfg-text#part-title-num in
@@ -289,11 +285,7 @@ end = struct
       +++ bb-title-overall +++ bb-inner
 
   let-block ctx +chapter it-title bt-inner =
-    let () = Ref.inc counter#chapter in
-    let () = Ref.set 0 counter#section in
-    let () = Ref.set 0 counter#subsection in
-    let () = Ref.set 0 counter#subsubsection in
-    let idx = embed-string (arabic (Ref.get counter#chapter)) in
+    let idx = embed-string (arabic (Counter.inc counter-chp)) in
     let it-num = {Chapter #idx;} in
 
     let ctx-title = ctx |> set-font-cfg cfg-text#chapter-title in
@@ -315,11 +307,8 @@ end = struct
     clear-page +++ bb-num +++ bb-title +++ bb-inner
 
   let-block ctx +section it-title bt-inner =
-    let () = Ref.inc counter#section in
-    let () = Ref.set 0 counter#subsection in
-    let () = Ref.set 0 counter#subsubsection in
-    let idx-chp = embed-string (arabic (Ref.get counter#chapter)) in
-    let idx-sec = embed-string (arabic (Ref.get counter#section)) in
+    let idx-chp = embed-string (arabic (Counter.get counter-chp)) in
+    let idx-sec = embed-string (arabic (Counter.inc counter-sec)) in
     let it-num = {#idx-chp;.#idx-sec;} in
 
     let ctx-title = ctx |> set-font-cfg cfg-text#section-title in
@@ -334,11 +323,9 @@ end = struct
     bb-title +++ bb-inner
 
   let-block ctx +subsection it-title bt-inner =
-    let () = Ref.inc counter#subsection in
-    let () = Ref.set 0 counter#subsubsection in
-    let idx-chp = embed-string (arabic (Ref.get counter#chapter)) in
-    let idx-sec = embed-string (arabic (Ref.get counter#section)) in
-    let idx-sse = embed-string (arabic (Ref.get counter#subsection)) in
+    let idx-chp = embed-string (arabic (Counter.get counter-chp)) in
+    let idx-sec = embed-string (arabic (Counter.get counter-sec)) in
+    let idx-sse = embed-string (arabic (Counter.inc counter-sse)) in
     let it-num = {#idx-chp;.#idx-sec;.#idx-sse;} in
 
     let ctx-title = ctx |> set-font-cfg cfg-text#subsection-title in
@@ -353,8 +340,14 @@ end = struct
     bb-title +++ bb-inner
 
   let-block ctx +subsubsection it-title bt-inner =
+    let idx-chp = embed-string (arabic (Counter.get counter-chp)) in
+    let idx-sec = embed-string (arabic (Counter.get counter-sec)) in
+    let idx-sse = embed-string (arabic (Counter.get counter-sse)) in
+    let idx-sss = embed-string (arabic (Counter.inc counter-sss)) in
+    let it-num = {#idx-chp;.#idx-sec;.#idx-sse;#idx-sss;} in
+
     let ctx-title = ctx |> set-font-cfg cfg-text#subsubsection-title in
-    let ib-num = read-inline ctx-title {1.1.1.1} in
+    let ib-num = read-inline ctx-title it-num in
     let ib-title = read-inline ctx-title it-title in
     let bb-title =
       line-break true false ctx-title

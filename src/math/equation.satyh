@@ -4,8 +4,12 @@
 
 @import: ../matrix
 @import: ./parens
+@import: ../counter
 
 module VersatyleMathEquation : sig
+
+  val ctr : Counter.t
+  val labelf : (int -> inline-text) ref
 
   direct +gather : [inline-text list?; math list;] block-cmd
   direct +eqnalign : [inline-text list?; math list;] block-cmd
@@ -19,6 +23,15 @@ module VersatyleMathEquation : sig
   % direct \alignedat : [int; math list;] math-cmd
 
 end = struct
+
+  let ctr = Counter.make 0 []
+
+  let labelf =
+    let value-to-label value =
+      let it-value = embed-string (arabic value) in
+      {(#it-value;)}
+    in
+    Ref.make value-to-label
 
   let-rec map-each f-lst lst =
     match f-lst with
