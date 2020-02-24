@@ -22,3 +22,11 @@ let math-graphics mcls wid ht dp grf =
 % graphics の中に任意の math を埋め込む関数．
 let draw-math ctx pt m =
   draw-text pt (embed-math ctx m)
+
+% range
+let-rec range n1 n2 =
+  let-rec aux min max =
+    if min == max  then [min] else min :: (aux (min + 1) max)
+  in
+  if n1 < n2 then (aux n1 n2) else (aux n2 n1)
+

@@ -95,6 +95,24 @@ end = struct
     |)
   |)
 
+  % counter
+
+  let counter-sss = Counter.make 0 []
+  let counter-sse = Counter.make 0 [counter-sss;]
+  let counter-sec = Counter.make 0 [counter-sse; VersatyleMathEquation.ctr]
+  let counter-chp = Counter.make 0 [counter-sec;]
+  let counter-part = Counter.make 0 []
+
+  % カスタムの labelf
+  let () =
+    let chp-sec-label eqnnum =
+      let it-chp = embed-string (arabic (Counter.get counter-chp)) in
+      let it-sec = embed-string (arabic (Counter.get counter-sec)) in
+      let it-eqnnum = embed-string (arabic eqnnum) in
+      {(#it-chp;.#it-sec;.#it-eqnnum;)}
+    in
+    VersatyleMathEquation.labelf |> Ref.set chp-sec-label
+
   %% }}}
 
   %% convenient values/functions {{{
@@ -205,12 +223,6 @@ end = struct
   %% }}}
 
   %% section {{{
-
-  let counter-sss = Counter.make 0 []
-  let counter-sse = Counter.make 0 [counter-sss;]
-  let counter-sec = Counter.make 0 [counter-sse;]
-  let counter-chp = Counter.make 0 [counter-sec;]
-  let counter-part = Counter.make 0 []
 
   let num-to-roman-char capital num =
     let unic-point = match num with

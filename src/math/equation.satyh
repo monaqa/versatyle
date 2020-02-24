@@ -2,6 +2,8 @@
 %
 % align や gather に相当するコマンド群．
 
+@require: list
+@import: ./util
 @import: ../matrix
 @import: ./parens
 @import: ../counter
@@ -11,11 +13,11 @@ module VersatyleMathEquation : sig
   val ctr : Counter.t
   val labelf : (int -> inline-text) ref
 
-  direct +gather : [inline-text list?; math list;] block-cmd
-  direct +eqnalign : [inline-text list?; math list;] block-cmd
+  direct +gather : [math list;] block-cmd
+  direct +eqnalign : [math list;] block-cmd
   direct +eqnalignat : [int; math list;] block-cmd
-  direct \gather : [inline-text list?; math list;] inline-cmd
-  direct \eqnalign : [inline-text list?; math list;] inline-cmd
+  direct \gather : [math list;] inline-cmd
+  direct \eqnalign : [math list;] inline-cmd
   direct \eqnalignat : [int; math list;] inline-cmd
   direct \eqnaligned : [math list;] math-cmd
   % direct \cases : [math list;] math-cmd
@@ -23,6 +25,8 @@ module VersatyleMathEquation : sig
   % direct \alignedat : [int; math list;] math-cmd
 
 end = struct
+
+  % counter {{{
 
   let ctr = Counter.make 0 []
 
@@ -32,6 +36,15 @@ end = struct
       {(#it-value;)}
     in
     Ref.make value-to-label
+
+  let create-label-list n-eq =
+    let int-to-ib = Ref.get labelf in
+    let _ = ctr |> Counter.inc in
+    let ctr-value = Counter.get ctr in
+    let _ = ctr |> Counter.add (n-eq - 1) in
+    let rangelst = range ctr-value (ctr-value + n-eq - 1) in
+    List.map int-to-ib rangelst
+  % }}}
 
   let-rec map-each f-lst lst =
     match f-lst with
@@ -62,6 +75,7 @@ end = struct
       | None    -> ib ++ inline-fil
       | Some(_) -> ib ++ inline-fil ++ inline-skip lengap
 
+
   let create-max-height-vphantom lst-ib inner =
     % inline-boxes のリストに対し，それらの最大の高さ/最大の深さを求め，
     % それらをそれぞれ高さ・深さにもつよう加工した inline-boxes を返す．
@@ -78,12 +92,7 @@ end = struct
     ])
 
 
-  let-block ctx +gather ?:it-lst-label-opt mlst =
-    let it-lst-label =
-      match it-lst-label-opt with
-      | Some(itlst) -> itlst
-      | None -> {| |}
-    in
+  let-block ctx +gather mlst =
     let vlen = 4pt in
 
     let math-matrix = Matrix.from-list 1 ${} mlst in
@@ -96,6 +105,7 @@ end = struct
     in
 
     % Label 表示用のテーブル（右端に置いて複数行に渡るラベルを実現する）
+    let it-lst-label = create-label-list (List.length mlst) in
     let ib-lst-label = List.map (read-inline ctx) it-lst-label in
     let max-height-vphantom-f = List.map create-max-height-vphantom (Matrix.to-llist ib-matrix) in
     let dummy-ib = read-inline ctx {} in
@@ -113,18 +123,13 @@ end = struct
     let ctx-eqn = ctx |> set-paragraph-margin margin margin in
     line-break true true ctx-eqn (inline-fil ++ ib-tabular ++ inline-fil ++ ib-label-tabular)
 
-  let-inline ctx \gather ?:it-lst-label-opt mlst =
+  let-inline ctx \gather mlst =
   inline-fil ++
     embed-block-breakable ctx (read-block ctx '<+gather(mlst);>)
       ++ omit-skip-after
 
 
-  let-block ctx +eqnalign ?:it-lst-label-opt mlst =
-    let it-lst-label =
-      match it-lst-label-opt with
-      | Some(itlst) -> itlst
-      | None -> {| |}
-    in
+  let-block ctx +eqnalign mlst =
     let vlen = 4pt in
 
     let math-matrix = Matrix.from-list 2 ${} mlst in
@@ -135,6 +140,8 @@ end = struct
     in
 
     % Label 表示用のテーブル（右端に置いて複数行に渡るラベルを実現する）
+    let (nrow, _) = Matrix.shape cell-matrix in
+    let it-lst-label = create-label-list nrow in
     let ib-lst-label = List.map (read-inline ctx) it-lst-label in
     let max-height-vphantom-f = List.map create-max-height-vphantom (Matrix.to-llist ib-matrix) in
     let dummy-ib = read-inline ctx {} in
@@ -152,7 +159,7 @@ end = struct
     let ctx-eqn = ctx |> set-paragraph-margin margin margin in
     line-break true true ctx-eqn (inline-fil ++ ib-tabular ++ inline-fil ++ ib-label-tabular)
 
-  let-inline ctx \eqnalign ?:it-lst-label-opt mlst =
+  let-inline ctx \eqnalign mlst =
     inline-fil ++
       embed-block-breakable ctx (read-block ctx '<+eqnalign(mlst);>)
         ++ omit-skip-after

@@ -15,6 +15,10 @@ module Counter : sig
   % and returns the value of counter after increment.
   val inc : t -> int
 
+  % Increment the counter and reset its child counters
+  % and returns the value of counter after increment.
+  val add : int -> t -> int
+
   % Get the value of the counter.
   % Does not change any of its children.
   val get : t -> int
@@ -46,15 +50,17 @@ end = struct
         let _ = List.map reset children in
         ctr-value |> Ref.set 0
 
-  let inc ctr =
+  let add addend ctr =
     match ctr with
     | LeafCounter(ctr-value) ->
-        let () = ctr-value |> Ref.set (Ref.get ctr-value + 1) in
+        let () = ctr-value |> Ref.set (Ref.get ctr-value + addend) in
         Ref.get ctr-value
     | BranchCounter(ctr-value, children) ->
-        let () = ctr-value |> Ref.set (Ref.get ctr-value + 1) in
+        let () = ctr-value |> Ref.set (Ref.get ctr-value + addend) in
         let _ = List.map reset children in
         Ref.get ctr-value
+
+  let inc = add 1
 
   let get ctr =
     match ctr with
