@@ -7,6 +7,8 @@
 
 module VersatyleMathMatrices : sig
 
+  val matrix-body : (int -> int -> inline-boxes -> inline-boxes) -> int -> math list -> math
+
   direct \matrix  : [int; math list] math-cmd
   direct \pmatrix : [int; math list] math-cmd
   direct \bmatrix : [int; math list] math-cmd
@@ -15,7 +17,11 @@ module VersatyleMathMatrices : sig
 
 end = struct
 
-  let matrix-body ncol mlst =
+  let centering i j ib = inline-fil ++ ib ++ inline-fil
+
+  % aligner: int -> inline-boxes -> inline-boxes
+  % (i, j) をどういうふうに揃えるか．
+  let matrix-body aligner ncol mlst =
     let ib-func ctx =
       let fsize = ctx |> get-font-size in
       let pad-width = fsize *' 0.4 in
@@ -24,13 +30,13 @@ end = struct
       % まずは math list を列数が ncol になるよう並べた tabular を作る
       let math-matrix = Matrix.from-list ncol ${} mlst in
       let ib-matrix = Matrix.map (embed-math ctx) math-matrix in
-      let ib-to-cell ib = 
+      let ib-to-cell i j ib = 
         NormalCell(
           (pad-width, pad-width, pad-height, pad-height),
-          inline-fil ++ ib ++ inline-fil
+          aligner i j ib
         )
       in
-      let cell-matrix = Matrix.map ib-to-cell ib-matrix in
+      let cell-matrix = Matrix.map-ij ib-to-cell ib-matrix in
       let rulef _ _ = [] in
       let ib-tabular = tabular (Matrix.to-llist cell-matrix) rulef in
 
@@ -60,18 +66,18 @@ end = struct
     text-in-math MathInner ib-func
 
   let-math \matrix ncol mlst =
-    matrix-body ncol mlst
+    matrix-body centering ncol mlst
 
   let-math \pmatrix ncol mlst =
-    math-paren Math.paren-left Math.paren-right (matrix-body ncol mlst)
+    math-paren Math.paren-left Math.paren-right (matrix-body centering ncol mlst)
 
   let-math \bmatrix ncol mlst =
-    math-paren Math.sqbracket-left Math.sqbracket-right (matrix-body ncol mlst)
+    math-paren Math.sqbracket-left Math.sqbracket-right (matrix-body centering ncol mlst)
 
   let-math \vmatrix ncol mlst =
-    math-paren Math.abs-left Math.abs-right (matrix-body ncol mlst)
+    math-paren Math.abs-left Math.abs-right (matrix-body centering ncol mlst)
 
   let-math \dmatrix ncol mlst =
-    math-paren Math.norm-left Math.norm-right (matrix-body ncol mlst)
+    math-paren Math.norm-left Math.norm-right (matrix-body centering ncol mlst)
 
 end

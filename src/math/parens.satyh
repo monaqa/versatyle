@@ -1,3 +1,5 @@
+@require: pervasives
+
 module VersatyleMathParens : sig
 
   direct \genparen : [(bool -> paren)?; (bool -> paren); math;] math-cmd
@@ -5,6 +7,8 @@ module VersatyleMathParens : sig
   val round-bracket : bool -> paren
   val curly-bracket : bool -> paren
   val empty-paren : bool -> paren
+
+  val paren-scheme : (length -> length -> color -> graphics) -> (length -> length * length * length) -> (length -> length) -> paren
 
   direct \p : [math;] math-cmd
   direct \b : [math;] math-cmd
@@ -36,6 +40,11 @@ end = struct
 
   % paren-scheme {{{
 
+  % 以下の3つの情報から， paren を返す関数
+  % graphicf: 括弧の高さ，フォントサイズ，括弧の色を指定し，グラフィックスを返す．
+  % padsf: フォントサイズを指定し，
+  % 「グラフィックの左側に配置するアキ」「右側に配置するアキ」「縦に配置するアキ」を返す．
+  % kinfo: kerning に関する情報．そのまま渡される
   let paren-scheme graphicf padsf kinfo hgt dpt hgtaxis fsize color =
 
     % 長さの計算
@@ -64,8 +73,7 @@ end = struct
   % }}}
 
   % pads {{{
-
-  let pads-normal-bracket is-open fsize =
+let pads-normal-bracket is-open fsize =
     let (pad-inner, pad-outer) = (fsize *' 0.08, fsize *' 0.1) in
     if is-open then (pad-outer, pad-inner, 0pt) else (pad-inner, pad-outer, 0pt)
 

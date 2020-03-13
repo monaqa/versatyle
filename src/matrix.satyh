@@ -1,4 +1,5 @@
 @require: list
+@require: option
 %% matrix (2-dimensional array)
 
 module Matrix : sig
@@ -17,6 +18,9 @@ module Matrix : sig
   % val copy-row: 'a list -> int -> 'a t
   % val copy-col: 'a list -> int -> 'a t
   val map: ('a -> 'b) -> 'a t -> 'b t
+
+  % mapi の行 i と列 j 指定版．
+  val map-ij: (int -> int -> 'a -> 'b) -> 'a t -> 'b t
 
   % map の f が adjacent になった版．ただし，隣接は行方向．
   val map-rowidx-adjacent: (int -> 'a -> 'a option -> 'a option -> 'b) -> 'a t -> 'b t
@@ -98,6 +102,10 @@ end = struct
     | None -> None
 
   let map f mtx = List.map (List.map f) mtx
+
+  let map-ij f mtx =
+    List.mapi (fun i -> List.mapi (f i)) mtx
+
 
   let map-rowidx-adjacent f mtx = List.map (List.mapi-adjacent f) mtx
 

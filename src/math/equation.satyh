@@ -7,20 +7,21 @@
 @import: ../matrix
 @import: ./parens
 @import: ../counter
+@import: matrices
 
 module VersatyleMathEquation : sig
 
   val ctr : Counter.t
   val labelf : (int -> inline-text) ref
 
-  direct +gather : [math list;] block-cmd
-  direct +eqnalign : [math list;] block-cmd
-  direct +eqnalignat : [int; math list;] block-cmd
-  direct \gather : [math list;] inline-cmd
-  direct \eqnalign : [math list;] inline-cmd
-  direct \eqnalignat : [int; math list;] inline-cmd
-  direct \eqnaligned : [math list;] math-cmd
-  % direct \cases : [math list;] math-cmd
+  direct +eqn-gather : [math list;] block-cmd
+  direct +eqn-align : [math list;] block-cmd
+  direct +eqn-alignat : [int; math list;] block-cmd
+  direct \eqn-gather : [math list;] inline-cmd
+  direct \eqn-align : [math list;] inline-cmd
+  direct \eqn-alignat : [int; math list;] inline-cmd
+  direct \eqn-aligned : [math list;] math-cmd
+  direct \eqn-cases : [math list;] math-cmd
   % direct \alignedat : [int; math list;] math-cmd
   % direct \alignedat : [int; math list;] math-cmd
 
@@ -92,7 +93,7 @@ end = struct
     ])
 
 
-  let-block ctx +gather mlst =
+  let-block ctx +eqn-gather mlst =
     let vlen = 4pt in
 
     let math-matrix = Matrix.from-list 1 ${} mlst in
@@ -123,13 +124,13 @@ end = struct
     let ctx-eqn = ctx |> set-paragraph-margin margin margin in
     line-break true true ctx-eqn (inline-fil ++ ib-tabular ++ inline-fil ++ ib-label-tabular)
 
-  let-inline ctx \gather mlst =
+  let-inline ctx \eqn-gather mlst =
   inline-fil ++
-    embed-block-breakable ctx (read-block ctx '<+gather(mlst);>)
+    embed-block-breakable ctx (read-block ctx '<+eqn-gather(mlst);>)
       ++ omit-skip-after
 
 
-  let-block ctx +eqnalign mlst =
+  let-block ctx +eqn-align mlst =
     let vlen = 4pt in
 
     let math-matrix = Matrix.from-list 2 ${} mlst in
@@ -159,13 +160,13 @@ end = struct
     let ctx-eqn = ctx |> set-paragraph-margin margin margin in
     line-break true true ctx-eqn (inline-fil ++ ib-tabular ++ inline-fil ++ ib-label-tabular)
 
-  let-inline ctx \eqnalign mlst =
+  let-inline ctx \eqn-align mlst =
     inline-fil ++
-      embed-block-breakable ctx (read-block ctx '<+eqnalign(mlst);>)
+      embed-block-breakable ctx (read-block ctx '<+eqn-align(mlst);>)
         ++ omit-skip-after
 
-  let-math \eqnaligned mlst =
-    let embedf ctx = 
+  let-math \eqn-aligned mlst =
+    let embedf ctx =
       let vlen = 4pt in
 
       let math-matrix = Matrix.from-list 2 ${} mlst in
@@ -184,7 +185,7 @@ end = struct
     in
     text-in-math MathOrd embedf
 
-  let-block ctx +eqnalignat ncol mlst =
+  let-block ctx +eqn-alignat ncol mlst =
 
     let vlen = 4pt in
 
@@ -202,9 +203,19 @@ end = struct
     let ctx-eqn = ctx |> set-paragraph-margin margin margin in
     line-break true true ctx-eqn (inline-fil ++ ib-tabular ++ inline-fil)
 
-  let-inline ctx \eqnalignat ncol mlst =
+  let-inline ctx \eqn-alignat ncol mlst =
     inline-fil ++
-      embed-block-breakable ctx (read-block ctx '<+eqnalignat(ncol)(mlst);>)
+      embed-block-breakable ctx (read-block ctx '<+eqn-alignat(ncol)(mlst);>)
         ++ omit-skip-after
+
+  let-math \eqn-cases mlst =
+    let aligner i j ib =
+      if j mod 2 == 0 then ib ++ inline-fil
+      else inline-fil ++ ib
+    in
+    let mtx = VersatyleMathMatrices.matrix-body aligner 2 mlst in
+    math-paren
+      (VersatyleMathParens.curly-bracket true)
+        (VersatyleMathParens.empty-paren false) mtx
 
 end
