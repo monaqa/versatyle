@@ -3,15 +3,17 @@
 
 open VersatyleBook
 
-let () = param-text#chapter-title#size |> Param.set 8pt
-let () = param-text#chapter-title#font-cjk |> Param.set (`ipaexm`, 1.0, 0.)
+% parameter settings (example)
+% let () = param-length#paper |> Param.set Paper.a3
+% let () = param-text#chapter-title#size |> Param.set 8pt
+% let () = param-text#chapter-title#font-cjk |> Param.set (`ipaexm`, 1.0, 0.)
 
 in
 
 document(|
   title = {|Versatyle パッケージ|};
   author = {|monaqa|};
-  date = {|2020/2/24|};
+  date = {|2020/3/15|};
 |)'<
 
 +chapter{Versatyle パッケージの概要}<
@@ -20,8 +22,10 @@ document(|
     文書クラス，そしてコマンドをまとめたパッケージ群です．
     標準では提供されていないコマンドや，
     標準よりも簡潔なインターフェースを実現するために試験的に開発されています．
-    あくまで試験的なパッケージであり，当分の間安定版にするつもりはありませんのでご注意ください
-    （コマンド名などの仕様変更が高確率で起こります）．
+    あくまで試験的なパッケージであり，
+    当分の間安定版にするつもりはありません．
+    仕様変更による互換性のない機能変更や
+    コマンド名の変更などが起きることがあります．
   }
   +p{
     Versatyle パッケージは以下で構成されます．
@@ -58,39 +62,46 @@ document(|
 
 +chapter{Versatyle/math パッケージ}<
   +p{
-    Versatyle には，数式を記述するためのコマンドを定義する math パッケージが入っています．
+    Versatyle には，数式を記述するためのコマンドを定義する
+    `versatyle/math` パッケージが入っています．
     現在は標準の `math` パッケージに足りない機能を補完するという意味合いが強く，
     標準のパッケージを完全に置き換えるものではありません．
-    そのため
+    そのため，`\int` や `\alpha` といったコマンドは定義されておらず，
+    それらを用いるには標準の `math` パッケージを用いる必要があります．
   }
 
-  +p{
-    例えば以下のような数式を書くことが出来ます．
-  }
+  +section{Versatyle/math/equation}<
+    +p{
+      `versatyle/math/equation` パッケージでは，
+      主に別行立て数式を組むための枠となるコマンドを提供します．
+      例えば以下のような数式を書くことが出来ます．
+    }
 
-  +eqn-align(${
-  | y |= x^2 + 1
-  | z |= \p{x^2 + 1}
-  |});
+    +eqn-align(${
+    | y |= x^2 + 1
+    | z |= \p{x^2 + 1}
+    |});
 
-  +eqn-align(${
+    +eqn-align(${
+      | y |= x^2 + 1
+      | y |= x^2 + 1
+      |}
+    );
+
+    +eqn-align(${
     | y |= x^2 + 1
     | y |= x^2 + 1
-    |}
-  );
+    | y |= x^2 + 1
+    | z |= \p{x^2 + 1}
+    |});
 
-  +eqn-align(${
-  | y |= x^2 + 1
-  | y |= x^2 + 1
-  | y |= x^2 + 1
-  | z |= \p{x^2 + 1}
-  |});
+    +eqn-align(${
+    | y |= x^2 + 1
+    | z |= \p{x^2 + 1}
+    | z |= \p{x^2 + 1}
+    |});
+  >
 
-  +eqn-align(${
-  | y |= x^2 + 1
-  | z |= \p{x^2 + 1}
-  | z |= \p{x^2 + 1}
-  |});
 >
 
 > % document

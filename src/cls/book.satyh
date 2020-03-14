@@ -11,11 +11,14 @@
 @import: ../module/counter
 @import: ../module/param
 @import: ../module/paramfont
+@import: ../module/paper
 
 
 module VersatyleBook : sig
 
   %% signature {{{
+
+  %% document function/commands {{{
 
   val document : 'title-cfg -> block-text -> document
     constraint 'title-cfg :: (|
@@ -34,15 +37,9 @@ module VersatyleBook : sig
   direct +p : [inline-text] block-cmd
   direct \emph : [inline-text] inline-cmd
 
-  % counter
-  val counter-part : Counter.t
-  val counter-chp  : Counter.t
-  val counter-sec  : Counter.t
-  val counter-sse  : Counter.t
-  val counter-sss  : Counter.t
+  % }}}
 
-  % parameters (user can edit value in preamble)
-  val p-indent : length Param.t
+  % parameters/counters {{{
 
   val param-text : (|
     normal : param-font;
@@ -58,11 +55,35 @@ module VersatyleBook : sig
     subsubsection-title : param-font;
     chapter-title : param-font;
   |)
+
+  val param-length :  (|
+    paper : (length * length) Param.t;
+    text-width : length Param.t;
+    text-height : length Param.t;
+    text-origin-pos : (length * length) Param.t;
+    sec-num-skip : length Param.t;
+    sse-num-skip : length Param.t;
+    sss-num-skip : length Param.t;
+    p-indent : length Param.t;
+    doc-title-space : (|
+      between-title-author : length Param.t;
+      between-author-date : length Param.t;
+    |)
+  |)
+
+  val counter-part : Counter.t
+  val counter-chp  : Counter.t
+  val counter-sec  : Counter.t
+  val counter-sse  : Counter.t
+  val counter-sss  : Counter.t
+
+  % }}}
+
   %% }}}
 
 end = struct
 
-  %% config {{{
+  %% parameters/counters {{{
 
   let default-font-normal = (|
     font-color = (RGB(0., 0., 0.));
@@ -70,8 +91,8 @@ end = struct
     font-cjk   = (`ipaexm`, 1.0, 0.);
     size = 10pt;
     par-margin-ratio = (0.6, 0.6);
-    leading-ratio = 1.4;
-    min-gap-ratio = 0.4;
+    leading-ratio = 1.6;
+    min-gap-ratio = 0.3;
   |)
 
   let default-font-emph = (|
@@ -84,6 +105,7 @@ end = struct
     default-font-normal with
       font-latin = (`Junicode`, 1.13, 0.);
       font-cjk = (`ipaexg`, 1.13, 0.);
+      par-margin-ratio = (1.0, 0.8);
   |)
 
   let param-text =
@@ -110,20 +132,20 @@ end = struct
         size = Param.make 12pt; |);
     |)
 
-  let cfg-length = (|
-    text-width = 440pt;
-    text-height = 630pt;
-    text-origin-pos = (60pt, 100pt);
-    sec-num-skip = 10pt;
-    sse-num-skip = 8pt;
-    sss-num-skip = 5pt;
+  let param-length = (|
+    paper = Param.make Paper.a4;
+    text-width = Param.make 440pt;
+    text-height = Param.make 630pt;
+    text-origin-pos = Param.make (60pt, 100pt);
+    sec-num-skip = Param.make 10pt;
+    sse-num-skip = Param.make 8pt;
+    sss-num-skip = Param.make 5pt;
+    p-indent = param-text#normal#size;
     doc-title-space = (|
-      between-title-author = 20pt;
-      between-author-date = 20pt;
+      between-title-author = Param.make 20pt;
+      between-author-date = Param.make 20pt;
     |)
   |)
-
-  let p-indent = Param.make (Param.get param-text#normal#size)
 
   % counter
 
@@ -159,13 +181,39 @@ end = struct
 
   let document record bt =
 
-    % fix parameters
-    let () = Param.fix p-indent in
+    % fix parameters. {{{
+    % You cannot change any values of parameter without unfixing.
+
+    let () = ParamFont.fix param-text#normal in
+    let () = ParamFont.fix param-text#emph in
+    let () = ParamFont.fix param-text#doc-title in
+    let () = ParamFont.fix param-text#doc-author in
+    let () = ParamFont.fix param-text#doc-date in
+    let () = ParamFont.fix param-text#part-title-num in
+    let () = ParamFont.fix param-text#part-title-text in
+    let () = ParamFont.fix param-text#chapter-title in
+    let () = ParamFont.fix param-text#section-title in
+    let () = ParamFont.fix param-text#subsection-title in
+    let () = ParamFont.fix param-text#subsubsection-title in
+    let () = ParamFont.fix param-text#chapter-title in
+
+    let () = Param.fix param-length#paper in
+    let () = Param.fix param-length#text-width in
+    let () = Param.fix param-length#text-height in
+    let () = Param.fix param-length#text-origin-pos in
+    let () = Param.fix param-length#sec-num-skip in
+    let () = Param.fix param-length#sse-num-skip in
+    let () = Param.fix param-length#sss-num-skip in
+    let () = Param.fix param-length#p-indent in
+    let () = Param.fix param-length#doc-title-space#between-title-author in
+    let () = Param.fix param-length#doc-title-space#between-author-date in
+
+    % }}}
 
     % initial context {{{
 
     let ctx =
-      get-initial-context cfg-length#text-width (command \math)
+      get-initial-context (Param.get param-length#text-width) (command \math)
         |> set-code-text-command (command \code)
         |> set-dominant-wide-script Kana
         |> set-language Kana Japanese
@@ -198,8 +246,8 @@ end = struct
       let bb-author = make-centered-lines ctx-author record#author in
       let bb-date = make-centered-lines ctx-date record#date in
 
-      bb-title +++ (block-skip cfg-length#doc-title-space#between-title-author)
-        +++ bb-author +++ (block-skip cfg-length#doc-title-space#between-author-date)
+      bb-title +++ (block-skip (Param.get param-length#doc-title-space#between-title-author))
+        +++ bb-author +++ (block-skip (Param.get param-length#doc-title-space#between-author-date))
           +++ bb-date
 
     in
@@ -207,13 +255,15 @@ end = struct
     % }}}
 
     let bb = read-block ctx bt in
+    let (paper-width, paper-height) = Param.get param-length#paper in
+    let paper = UserDefinedPaper(paper-width, paper-height) in
 
     % header/footer {{{
 
     let pagecontf _ =
       (|
-        text-origin = cfg-length#text-origin-pos;
-        text-height = cfg-length#text-height;
+        text-origin = (Param.get param-length#text-origin-pos);
+        text-height = (Param.get param-length#text-height);
       |)
     in
     let pagepartsf _ =
@@ -227,7 +277,7 @@ end = struct
 
     % }}}
 
-    page-break A4Paper pagecontf pagepartsf (bb-title-block +++ bb)
+    page-break paper pagecontf pagepartsf (bb-title-block +++ bb)
 
   %% }}}
 
@@ -290,8 +340,8 @@ end = struct
     let ib-num = read-inline ctx {PART \getcounter?:(to-Roman)(counter-part);} in
     let ib-title = read-inline ctx-title it-title in
 
-    let ib-gr = inline-graphics cfg-length#text-width 3pt 0pt (fun (x, y) -> [
-      fill (Color.gray 0.6) (Gr.rectangle (x, y) (x +' cfg-length#text-width, y +' 3pt))
+    let ib-gr = inline-graphics (Param.get param-length#text-width) 3pt 0pt (fun (x, y) -> [
+      fill (Color.gray 0.6) (Gr.rectangle (x, y) (x +' (Param.get param-length#text-width), y +' 3pt))
     ])
     in
 
@@ -302,7 +352,7 @@ end = struct
     let bb-title-overall = bb-gr +++ bb-num +++ bb-title +++ bb-gr in
     let bb-inner = read-block ctx bt-inner in
 
-    let skip-length = (cfg-length#text-height -' (get-natural-length bb-title-overall)) *' 0.5 in
+    let skip-length = (Param.get (param-length#text-height) -' (get-natural-length bb-title-overall)) *' 0.5 in
 
     clear-page +++ (block-skip skip-length)
       +++ bb-title-overall +++ bb-inner
@@ -338,7 +388,7 @@ end = struct
     let ib-title = read-inline ctx-title it-title in
     let bb-title =
       line-break true false ctx-title
-        (ib-num ++ (inline-skip cfg-length#sec-num-skip) ++ ib-title ++ inline-fil)
+        (ib-num ++ (inline-skip (Param.get param-length#sec-num-skip)) ++ ib-title ++ inline-fil)
     in
     let bb-inner = read-block ctx bt-inner in
 
@@ -355,7 +405,7 @@ end = struct
     let ib-title = read-inline ctx-title it-title in
     let bb-title =
       line-break true false ctx-title
-        (ib-num ++ (inline-skip cfg-length#sse-num-skip) ++ ib-title ++ inline-fil)
+        (ib-num ++ (inline-skip (Param.get param-length#sse-num-skip)) ++ ib-title ++ inline-fil)
     in
     let bb-inner = read-block ctx bt-inner in
 
@@ -372,7 +422,7 @@ end = struct
     let ib-title = read-inline ctx-title it-title in
     let bb-title =
       line-break true false ctx-title
-        (ib-num ++ (inline-skip cfg-length#sss-num-skip) ++ ib-title ++ inline-fil)
+        (ib-num ++ (inline-skip (Param.get param-length#sss-num-skip)) ++ ib-title ++ inline-fil)
     in
     let bb-inner = read-block ctx bt-inner in
 
@@ -384,7 +434,7 @@ end = struct
 
   let-block ctx +p it =
     line-break true true ctx
-      (inline-skip (Param.get p-indent) ++ (read-inline ctx it) ++ inline-fil)
+      (inline-skip (Param.get param-length#p-indent) ++ (read-inline ctx it) ++ inline-fil)
 
   let-inline ctx \emph it =
     let ctx-emph = ctx |> ParamFont.set-font param-text#emph in

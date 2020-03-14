@@ -28,6 +28,8 @@ module ParamFont : sig
 
   val set-size : param-font -> context -> context
 
+  val fix : param-font -> unit
+
 end = struct
 
   let make rcd-prm =
@@ -58,4 +60,14 @@ end = struct
   let set prm ctx =
     ctx |> set-font prm
         |> set-size prm
+
+  let fix prm =
+    let () = Param.fix prm#font-color in
+    let () = Param.fix prm#font-latin in
+    let () = Param.fix prm#font-cjk in
+    let () = Param.fix prm#size in
+    let () = Param.fix prm#par-margin-ratio in
+    let () = Param.fix prm#leading-ratio in
+    let () = Param.fix prm#min-gap-ratio in
+    ()
 end

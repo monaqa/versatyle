@@ -1,0 +1,67 @@
+module Paper : sig
+
+  val a0 : length * length
+  val a1 : length * length
+  val a2 : length * length
+  val a3 : length * length
+  val a4 : length * length
+  val a5 : length * length
+
+  val iso-b0 : length * length
+  val iso-b1 : length * length
+  val iso-b2 : length * length
+  val iso-b3 : length * length
+  val iso-b4 : length * length
+  val iso-b5 : length * length
+
+  val c0 : length * length
+  val c1 : length * length
+  val c2 : length * length
+  val c3 : length * length
+  val c4 : length * length
+  val c5 : length * length
+
+  val jis-b0 : length * length
+  val jis-b1 : length * length
+  val jis-b2 : length * length
+  val jis-b3 : length * length
+  val jis-b4 : length * length
+  val jis-b5 : length * length
+
+  val us-letter : length * length
+  val us-legal : length * length
+
+end = struct
+
+  let a0 = (841mm, 1189mm)
+  let a1 = (594mm,  841mm)
+  let a2 = (420mm,  594mm)
+  let a3 = (297mm,  420mm)
+  let a4 = (210mm,  297mm)
+  let a5 = (148mm,  210mm)
+
+  let iso-b0 = (1000mm, 1414mm)
+  let iso-b1 = ( 707mm, 1000mm)
+  let iso-b2 = ( 500mm,  707mm)
+  let iso-b3 = ( 353mm,  500mm)
+  let iso-b4 = ( 250mm,  353mm)
+  let iso-b5 = ( 176mm,  250mm)
+
+  let c0 = (917mm, 1297mm)
+  let c1 = (648mm,  917mm)
+  let c2 = (458mm,  648mm)
+  let c3 = (324mm,  458mm)
+  let c4 = (229mm,  324mm)
+  let c5 = (162mm,  229mm)
+
+  let jis-b0 = (1030mm, 1456mm)
+  let jis-b1 = ( 728mm, 1030mm)
+  let jis-b2 = ( 515mm,  728mm)
+  let jis-b3 = ( 364mm,  515mm)
+  let jis-b4 = ( 257mm,  364mm)
+  let jis-b5 = ( 182mm,  257mm)
+
+  let us-letter = (216mm, 279mm)
+  let us-legal = (216mm, 356mm)
+
+end
