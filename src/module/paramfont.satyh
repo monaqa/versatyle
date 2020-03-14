@@ -12,7 +12,15 @@ type param-font = (|
 
 module ParamFont : sig
 
-  val copy : param-font -> param-font
+  val make : (|
+    font-color : color;
+    font-latin : (string * float * float);
+    font-cjk   : (string * float * float);
+    size : length;
+    par-margin-ratio : (float * float);
+    leading-ratio : float;
+    min-gap-ratio : float;
+  |) -> param-font
 
   val set : param-font -> context -> context
 
@@ -22,15 +30,15 @@ module ParamFont : sig
 
 end = struct
 
-  let copy prm =
+  let make rcd-prm =
     (|
-      font-color = Param.make (Param.get prm#font-color);
-      font-latin = Param.make (Param.get prm#font-latin);
-      font-cjk   = Param.make (Param.get prm#font-cjk);
-      size = Param.make (Param.get prm#size);
-      par-margin-ratio = Param.make (Param.get prm#par-margin-ratio);
-      leading-ratio = Param.make (Param.get prm#leading-ratio);
-      min-gap-ratio = Param.make (Param.get prm#min-gap-ratio);
+      font-color = Param.make rcd-prm#font-color;
+      font-latin = Param.make rcd-prm#font-latin;
+      font-cjk   = Param.make rcd-prm#font-cjk;
+      size = Param.make rcd-prm#size;
+      par-margin-ratio = Param.make rcd-prm#par-margin-ratio;
+      leading-ratio = Param.make rcd-prm#leading-ratio;
+      min-gap-ratio = Param.make rcd-prm#min-gap-ratio;
     |)
 
   let set-font prm ctx =

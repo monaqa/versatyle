@@ -65,48 +65,48 @@ end = struct
   %% config {{{
 
   let default-font-normal = (|
-    font-color = Param.make (RGB(0., 0., 0.));
-    font-latin = Param.make (`Junicode`, 1.13, 0.);
-    font-cjk   = Param.make (`ipaexm`, 1.0, 0.);
-    size = Param.make 10pt;
-    par-margin-ratio = Param.make (0.6, 0.6);
-    leading-ratio = Param.make 1.4;
-    min-gap-ratio = Param.make 0.4;
+    font-color = (RGB(0., 0., 0.));
+    font-latin = (`Junicode`, 1.13, 0.);
+    font-cjk   = (`ipaexm`, 1.0, 0.);
+    size = 10pt;
+    par-margin-ratio = (0.6, 0.6);
+    leading-ratio = 1.4;
+    min-gap-ratio = 0.4;
   |)
 
   let default-font-emph = (|
     default-font-normal with
-      font-latin = Param.make (`Junicode-it`, 1.13, 0.);
-      font-cjk = Param.make (`ipaexg`, 1.13, 0.);
+      font-latin = (`Junicode-it`, 1.13, 0.);
+      font-cjk = (`ipaexg`, 1.13, 0.);
   |)
 
   let default-font-title = (|
     default-font-normal with
-      font-latin = Param.make (`Junicode`, 1.13, 0.);
-      font-cjk = Param.make (`ipaexg`, 1.13, 0.);
+      font-latin = (`Junicode`, 1.13, 0.);
+      font-cjk = (`ipaexg`, 1.13, 0.);
   |)
 
   let param-text =
     (|
-      normal = ParamFont.copy default-font-normal;
-      emph = ParamFont.copy default-font-emph;
-      doc-title = (| (ParamFont.copy default-font-title) with
+      normal = ParamFont.make default-font-normal;
+      emph = ParamFont.make default-font-emph;
+      doc-title = (| (ParamFont.make default-font-title) with
         size = Param.make 28pt; par-margin-ratio = Param.make (0.4, 0.4) |);
-      doc-author = (| (ParamFont.copy default-font-normal) with
+      doc-author = (| (ParamFont.make default-font-normal) with
         size = Param.make 16pt; par-margin-ratio = Param.make (0.4, 0.4) |);
-      doc-date = (| (ParamFont.copy default-font-normal) with
+      doc-date = (| (ParamFont.make default-font-normal) with
         size = Param.make 12pt; par-margin-ratio = Param.make (0.4, 0.4) |);
-      part-title-num = (| (ParamFont.copy default-font-title) with
+      part-title-num = (| (ParamFont.make default-font-title) with
         size = Param.make 16pt; par-margin-ratio = Param.make (0.8, 0.8)|);
-      part-title-text = (| (ParamFont.copy default-font-title) with
+      part-title-text = (| (ParamFont.make default-font-title) with
         size = Param.make 28pt; par-margin-ratio = Param.make (0.8, 0.8)|);
-      chapter-title = (| (ParamFont.copy default-font-title) with
+      chapter-title = (| (ParamFont.make default-font-title) with
         size = Param.make 28pt; |);
-      section-title = (| (ParamFont.copy default-font-title) with
+      section-title = (| (ParamFont.make default-font-title) with
         size = Param.make 20pt; |);
-      subsection-title = (| (ParamFont.copy default-font-title) with
+      subsection-title = (| (ParamFont.make default-font-title) with
         size = Param.make 16pt; |);
-      subsubsection-title = (| (ParamFont.copy default-font-title) with
+      subsubsection-title = (| (ParamFont.make default-font-title) with
         size = Param.make 12pt; |);
     |)
 
@@ -135,13 +135,12 @@ end = struct
 
   % カスタムの labelf
   let () =
-    let chp-sec-label eqnnum =
-      let it-chp = embed-string (arabic (Counter.get counter-chp)) in
-      let it-sec = embed-string (arabic (Counter.get counter-sec)) in
-      let it-eqnnum = embed-string (arabic eqnnum) in
-      {(#it-chp;.#it-sec;.#it-eqnnum;)}
+    let chp-sec-label base idx =
+      let _ = VersatyleMathEquation.ctr |> Counter.inc in
+      let it-eqnnum = embed-string (arabic (base + idx)) in
+      {(\getcounter(counter-chp);.\getcounter(counter-sec);.#it-eqnnum;)}
     in
-    VersatyleMathEquation.labelf |> Ref.set chp-sec-label
+    VersatyleMathEquation.set-labelf chp-sec-label
 
   %% }}}
 

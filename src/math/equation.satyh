@@ -5,14 +5,15 @@
 @require: list
 @import: util
 @import: ../module/matrix
-@import: parens
 @import: ../module/counter
+@import: ../module/counter
+@import: parens
 @import: matrices
 
 module VersatyleMathEquation : sig
 
   val ctr : Counter.t
-  val labelf : (int -> inline-text) ref
+  val set-labelf : (int -> int -> inline-text) -> unit
 
   direct +eqn-gather : [math list;] block-cmd
   direct +eqn-align : [math list;] block-cmd
@@ -32,19 +33,24 @@ end = struct
   let ctr = Counter.make 0 []
 
   let labelf =
-    let value-to-label value =
-      let it-value = embed-string (arabic value) in
+    let value-to-label base idx =
+      % base: 数式開始時点でのカウンタの値．
+      % idx: 対象の数式の何番目にあるか（0 始まり）
+      let _ = ctr |> Counter.inc in
+      let it-value = embed-string (arabic (base + idx)) in
       {(#it-value;)}
     in
     Ref.make value-to-label
 
+  let set-labelf lf = labelf |> Ref.set lf
+
   let create-label-list n-eq =
     let int-to-ib = Ref.get labelf in
-    let _ = ctr |> Counter.inc in
+    % let _ = ctr |> Counter.inc in
     let ctr-value = Counter.get ctr in
-    let _ = ctr |> Counter.add (n-eq - 1) in
-    let rangelst = range ctr-value (ctr-value + n-eq - 1) in
-    List.map int-to-ib rangelst
+    % let _ = ctr |> Counter.add (n-eq - 1) in
+    let rangelst = range 1 n-eq in
+    List.map (int-to-ib ctr-value) rangelst
   % }}}
 
   let-rec map-each f-lst lst =
