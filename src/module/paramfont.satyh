@@ -1,0 +1,53 @@
+@import: param
+
+type param-font = (|
+  font-color : color Param.t;
+  font-latin : (string * float * float) Param.t;
+  font-cjk   : (string * float * float) Param.t;
+  size : length Param.t;
+  par-margin-ratio : (float * float) Param.t;
+  leading-ratio : float Param.t;
+  min-gap-ratio : float Param.t;
+|)
+
+module ParamFont : sig
+
+  val copy : param-font -> param-font
+
+  val set : param-font -> context -> context
+
+  val set-font : param-font -> context -> context
+
+  val set-size : param-font -> context -> context
+
+end = struct
+
+  let copy prm =
+    (|
+      font-color = Param.make (Param.get prm#font-color);
+      font-latin = Param.make (Param.get prm#font-latin);
+      font-cjk   = Param.make (Param.get prm#font-cjk);
+      size = Param.make (Param.get prm#size);
+      par-margin-ratio = Param.make (Param.get prm#par-margin-ratio);
+      leading-ratio = Param.make (Param.get prm#leading-ratio);
+      min-gap-ratio = Param.make (Param.get prm#min-gap-ratio);
+    |)
+
+  let set-font prm ctx =
+    ctx |> set-font Kana           (Param.get prm#font-cjk)
+        |> set-font HanIdeographic (Param.get prm#font-cjk)
+        |> set-font Latin          (Param.get prm#font-latin)
+        |> set-text-color (Param.get prm#font-color)
+
+  let set-size prm ctx =
+    let fsize = Param.get prm#size in
+    let (mgn-upper-ratio, mgn-lower-ratio) = Param.get prm#par-margin-ratio in
+    ctx |> set-font-size fsize
+        |> set-paragraph-margin (fsize *' mgn-upper-ratio) (fsize *' mgn-lower-ratio)
+        |> set-leading (fsize *' (Param.get prm#leading-ratio))
+        |> set-min-gap-of-lines (fsize *' (Param.get prm#min-gap-ratio))
+
+  let set prm ctx =
+    ctx |> set-font prm
+        |> set-size prm
+end

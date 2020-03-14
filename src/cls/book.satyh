@@ -10,6 +10,7 @@
 @import: ../table
 @import: ../module/counter
 @import: ../module/param
+@import: ../module/paramfont
 
 
 module VersatyleBook : sig
@@ -23,12 +24,6 @@ module VersatyleBook : sig
       date: inline-text list;
     |)
 
-  val counter-part : Counter.t
-  val counter-chp  : Counter.t
-  val counter-sec  : Counter.t
-  val counter-sse  : Counter.t
-  val counter-sss  : Counter.t
-
   direct +part : [inline-text; block-text] block-cmd
   direct +chapter : [inline-text; block-text] block-cmd
   direct +section : [inline-text; block-text] block-cmd
@@ -39,48 +34,81 @@ module VersatyleBook : sig
   direct +p : [inline-text] block-cmd
   direct \emph : [inline-text] inline-cmd
 
+  % counter
+  val counter-part : Counter.t
+  val counter-chp  : Counter.t
+  val counter-sec  : Counter.t
+  val counter-sse  : Counter.t
+  val counter-sss  : Counter.t
+
+  % parameters (user can edit value in preamble)
+  val p-indent : length Param.t
+
+  val param-text : (|
+    normal : param-font;
+    emph : param-font;
+    doc-title : param-font;
+    doc-author : param-font;
+    doc-date : param-font;
+    part-title-num : param-font;
+    part-title-text : param-font;
+    chapter-title : param-font;
+    section-title : param-font;
+    subsection-title : param-font;
+    subsubsection-title : param-font;
+    chapter-title : param-font;
+  |)
   %% }}}
 
 end = struct
 
   %% config {{{
 
-
-  let cfg-text-normal = (|
-    size = 10pt;
-    font-latin = (`Junicode`, 1.13, 0.);
-    font-cjk   = (`ipaexm`, 1.0, 0.);
-    font-math  = `lmodern`;
-    par-margin-ratio = (0.6, 0.6);
-    leading-ratio = 1.4;
+  let default-font-normal = (|
+    font-color = Param.make (RGB(0., 0., 0.));
+    font-latin = Param.make (`Junicode`, 1.13, 0.);
+    font-cjk   = Param.make (`ipaexm`, 1.0, 0.);
+    size = Param.make 10pt;
+    par-margin-ratio = Param.make (0.6, 0.6);
+    leading-ratio = Param.make 1.4;
+    min-gap-ratio = Param.make 0.4;
   |)
 
-  let cfg-text-emph = (|
-    cfg-text-normal
-      with font-cjk = (`ipaexg`, 1.0, 0.);
-      font-latin = (`Junicode-it`, 1.13, 0.);
+  let default-font-emph = (|
+    default-font-normal with
+      font-latin = Param.make (`Junicode-it`, 1.13, 0.);
+      font-cjk = Param.make (`ipaexg`, 1.13, 0.);
   |)
 
-  let cfg-text-title = (|
-    cfg-text-normal
-      with font-cjk = (`ipaexg`, 1.0, 0.);
-      font-latin = (`Junicode`, 1.13, 0.);
-      par-margin-ratio = (1.0, 0.8);
+  let default-font-title = (|
+    default-font-normal with
+      font-latin = Param.make (`Junicode`, 1.13, 0.);
+      font-cjk = Param.make (`ipaexg`, 1.13, 0.);
   |)
 
-  let cfg-text = (|
-    normal = cfg-text-normal;
-    emph =cfg-text-emph;
-    doc-title = (| cfg-text-title with size = 28pt; par-margin-ratio = (0.4, 0.4) |);
-    doc-author = (| cfg-text-normal with size = 16pt; par-margin-ratio = (0.4, 0.4) |);
-    doc-date = (| cfg-text-normal with size = 12pt; par-margin-ratio = (0.4, 0.4) |);
-    part-title-num = (| cfg-text-title with size = 16pt; par-margin-ratio = (0.8, 0.8)|);
-    part-title-text = (| cfg-text-title with size = 28pt; par-margin-ratio = (0.8, 0.8)|);
-    chapter-title = (| cfg-text-title with size = 28pt; |);
-    section-title = (| cfg-text-title with size = 20pt; |);
-    subsection-title = (| cfg-text-title with size = 16pt; |);
-    subsubsection-title = (| cfg-text-title with size = 12pt; |);
-  |)
+  let param-text =
+    (|
+      normal = ParamFont.copy default-font-normal;
+      emph = ParamFont.copy default-font-emph;
+      doc-title = (| (ParamFont.copy default-font-title) with
+        size = Param.make 28pt; par-margin-ratio = Param.make (0.4, 0.4) |);
+      doc-author = (| (ParamFont.copy default-font-normal) with
+        size = Param.make 16pt; par-margin-ratio = Param.make (0.4, 0.4) |);
+      doc-date = (| (ParamFont.copy default-font-normal) with
+        size = Param.make 12pt; par-margin-ratio = Param.make (0.4, 0.4) |);
+      part-title-num = (| (ParamFont.copy default-font-title) with
+        size = Param.make 16pt; par-margin-ratio = Param.make (0.8, 0.8)|);
+      part-title-text = (| (ParamFont.copy default-font-title) with
+        size = Param.make 28pt; par-margin-ratio = Param.make (0.8, 0.8)|);
+      chapter-title = (| (ParamFont.copy default-font-title) with
+        size = Param.make 28pt; |);
+      section-title = (| (ParamFont.copy default-font-title) with
+        size = Param.make 20pt; |);
+      subsection-title = (| (ParamFont.copy default-font-title) with
+        size = Param.make 16pt; |);
+      subsubsection-title = (| (ParamFont.copy default-font-title) with
+        size = Param.make 12pt; |);
+    |)
 
   let cfg-length = (|
     text-width = 440pt;
@@ -89,12 +117,13 @@ end = struct
     sec-num-skip = 10pt;
     sse-num-skip = 8pt;
     sss-num-skip = 5pt;
-    p-indent = cfg-text#normal#size;
     doc-title-space = (|
       between-title-author = 20pt;
       between-author-date = 20pt;
     |)
   |)
+
+  let p-indent = Param.make (Param.get param-text#normal#size)
 
   % counter
 
@@ -117,26 +146,6 @@ end = struct
   %% }}}
 
   %% convenient values/functions {{{
-
-  % size だけを変更する
-  let set-font-cfg-size fcfg ctx = set-font-size fcfg#size ctx
-
-  % 書体だけを変更する
-  let set-font-cfg-font fcfg ctx =
-    ctx |> set-font Kana           fcfg#font-cjk
-        |> set-font HanIdeographic fcfg#font-cjk
-        |> set-font Latin          fcfg#font-latin
-        |> set-math-font fcfg#font-math
-
-  % 一括で変更する
-  let set-font-cfg fcfg ctx =
-    let fsize = fcfg#size in
-    let (mgn-upper-ratio, mgn-lower-ratio) = fcfg#par-margin-ratio in
-    ctx |> set-font-size fsize
-        |> set-font-cfg-font fcfg
-        |> set-paragraph-margin (fsize *' mgn-upper-ratio) (fsize *' mgn-lower-ratio)
-        |> set-leading (fsize *' fcfg#leading-ratio)
-
   let no-pads = (0pt, 0pt, 0pt, 0pt)
   %% }}}
 
@@ -151,6 +160,9 @@ end = struct
 
   let document record bt =
 
+    % fix parameters
+    let () = Param.fix p-indent in
+
     % initial context {{{
 
     let ctx =
@@ -161,7 +173,7 @@ end = struct
         |> set-language HanIdeographic Japanese
         |> set-dominant-narrow-script Latin
         |> set-language Latin English
-        |> set-font-cfg cfg-text#normal
+        |> ParamFont.set param-text#normal
         |> set-hyphen-penalty 100
     in
 
@@ -179,9 +191,9 @@ end = struct
         (List.map to-centered-bb it-lst) |> List.fold-left (+++) block-nil
       in
 
-      let ctx-title = ctx |> set-font-cfg cfg-text#doc-title in
-      let ctx-author = ctx |> set-font-cfg cfg-text#doc-author in
-      let ctx-date = ctx |> set-font-cfg cfg-text#doc-date in
+      let ctx-title = ctx |> ParamFont.set param-text#doc-title in
+      let ctx-author = ctx |> ParamFont.set param-text#doc-author in
+      let ctx-date = ctx |> ParamFont.set param-text#doc-date in
 
       let bb-title = make-centered-lines ctx-title record#title in
       let bb-author = make-centered-lines ctx-author record#author in
@@ -274,8 +286,8 @@ end = struct
   let-block ctx +part it-title bt-inner =
     let _ = Counter.inc counter-part in
 
-    let ctx-title = ctx |> set-font-cfg cfg-text#part-title-text in
-    let ctx-num = ctx |> set-font-cfg cfg-text#part-title-num in
+    let ctx-title = ctx |> ParamFont.set param-text#part-title-text in
+    let ctx-num = ctx |> ParamFont.set param-text#part-title-num in
     let ib-num = read-inline ctx {PART \getcounter?:(to-Roman)(counter-part);} in
     let ib-title = read-inline ctx-title it-title in
 
@@ -300,7 +312,7 @@ end = struct
     let _ = Counter.inc counter-chp in
     let it-num = {Chapter \getcounter(counter-chp);} in
 
-    let ctx-title = ctx |> set-font-cfg cfg-text#chapter-title in
+    let ctx-title = ctx |> ParamFont.set (param-text#chapter-title) in
     let leading-height = (get-font-size ctx-title) *' 0.5 in
     let title-inner-sep = (get-font-size ctx-title) *' 1.2 in
     let ib-num = read-inline ctx-title it-num in
@@ -322,7 +334,7 @@ end = struct
     let _ = Counter.inc counter-sec in
     let it-num = {\getcounter(counter-chp);.\getcounter(counter-sec);} in
 
-    let ctx-title = ctx |> set-font-cfg cfg-text#section-title in
+    let ctx-title = ctx |> ParamFont.set param-text#section-title in
     let ib-num = read-inline ctx-title it-num in
     let ib-title = read-inline ctx-title it-title in
     let bb-title =
@@ -339,7 +351,7 @@ end = struct
       {\getcounter(counter-chp);.\getcounter(counter-sec);.\getcounter(counter-sse);}
     in
 
-    let ctx-title = ctx |> set-font-cfg cfg-text#subsection-title in
+    let ctx-title = ctx |> ParamFont.set param-text#subsection-title in
     let ib-num = read-inline ctx-title it-num in
     let ib-title = read-inline ctx-title it-title in
     let bb-title =
@@ -356,7 +368,7 @@ end = struct
       {\getcounter(counter-chp);.\getcounter(counter-sec);.\getcounter(counter-sse);.\getcounter(counter-sss);}
     in
 
-    let ctx-title = ctx |> set-font-cfg cfg-text#subsubsection-title in
+    let ctx-title = ctx |> ParamFont.set param-text#subsubsection-title in
     let ib-num = read-inline ctx-title it-num in
     let ib-title = read-inline ctx-title it-title in
     let bb-title =
@@ -373,10 +385,10 @@ end = struct
 
   let-block ctx +p it =
     line-break true true ctx
-      (inline-skip cfg-length#p-indent ++ (read-inline ctx it) ++ inline-fil)
+      (inline-skip (Param.get p-indent) ++ (read-inline ctx it) ++ inline-fil)
 
   let-inline ctx \emph it =
-    let ctx-emph = ctx |> set-font-cfg-font cfg-text#emph in
+    let ctx-emph = ctx |> ParamFont.set-font param-text#emph in
     read-inline ctx-emph it
 
   %% }}}

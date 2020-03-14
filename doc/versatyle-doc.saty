@@ -3,6 +3,9 @@
 
 open VersatyleBook
 
+let () = param-text#chapter-title#size |> Param.set 8pt
+let () = param-text#chapter-title#font-cjk |> Param.set (`ipaexm`, 1.0, 0.)
+
 in
 
 document(|
@@ -48,6 +51,9 @@ document(|
 >
 
 +chapter{Versatyle 文書クラス}<
+  +p{
+    Versatyle には，現在 `book` クラスのみが用意されています．
+  }
 >
 
 +chapter{Versatyle/math パッケージ}<
