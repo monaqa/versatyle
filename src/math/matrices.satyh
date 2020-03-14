@@ -3,7 +3,7 @@
 % 行列の組版のためのライブラリ．
 
 @require: math
-@import: ../matrix
+@import: ../module/matrix
 
 module VersatyleMathMatrices : sig
 

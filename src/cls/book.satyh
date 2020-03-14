@@ -5,11 +5,12 @@
 @require: gr
 @require: base/ref
 @require: base/map
-@import: math
-@import: counter
+@import: ../math
+@import: ../table
+@import: ../module/counter
 
 
-module Versatyle : sig
+module VersatyleBook : sig
 
   %% signature {{{
 

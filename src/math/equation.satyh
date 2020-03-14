@@ -3,10 +3,10 @@
 % align や gather に相当するコマンド群．
 
 @require: list
-@import: ./util
-@import: ../matrix
-@import: ./parens
-@import: ../counter
+@import: util
+@import: ../module/matrix
+@import: parens
+@import: ../module/counter
 @import: matrices
 
 module VersatyleMathEquation : sig

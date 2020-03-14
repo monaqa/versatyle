@@ -4,7 +4,7 @@
 @require: gr
 @require: option
 @require: color
-@import: matrix
+@import: ./module/matrix
 
 % 罫線のパターン．
 type ruleptn = length list -> length list -> graphics list

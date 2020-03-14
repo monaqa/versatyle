@@ -1,270 +1,60 @@
 @require: enumitem/enumitem
-@require: easytable/easytable-dirtyhack
 @require: code
-@import: ../src/versatyle
+@import: ../src/cls/book
 
-Versatyle.document(|
-  title = {|\SATySFi; + Versatyle |ドキュメント|};
+VersatyleBook.document(|
+  title = {|Versatyle パッケージ|};
   author = {|monaqa|};
-  date = {|2020/2/2|};
+  date = {|2020/2/24|};
 |)'<
 
-+part{はじめに}<
-  +chapter{本書について}<
-    +p{
-      本書は，\SATySFi; の汎用的なクラスファイルである
-      Versatyle パッケージの仕様及び使い方を記したものです．
-      本書自身も Versatyle を用いて書かれています．
-      本書は，単なる Versatyle パッケージの使用法にとどまらず，
-      \SATySFi; を用いた一般的なドキュメント作成の仕方，
-      文書設定やクラスファイル，パッケージのカスタマイズ方法などについても述べます．
++chapter{Versatyle パッケージの概要}<
+  +p{
+    Versatyle は，組版用言語 \SATySFi; において汎用的な用途に使える
+    文書クラス，そしてコマンドをまとめたパッケージ群です．
+    標準では提供されていないコマンドや，
+    標準よりも簡潔なインターフェースを実現するために試験的に開発されています．
+    あくまで試験的なパッケージであり，当分の間安定版にするつもりはありませんのでご注意ください
+    （コマンド名などの仕様変更が高確率で起こります）．
+  }
+  +p{
+    Versatyle パッケージは以下で構成されます．
+
+    \listing{
+      * それ自身が提供するクラスファイル
+        ** `versatyle/cls/book` パッケージ
+      * 様々なコマンドを種類ごとにまとめたいくつかのパッケージ
+        ** `versatyle/math` パッケージ
+        ** `versatyle/table` パッケージ
+        ** etc.
     }
-    +section{本書の構成}<
-      +p{
-        本書は3部構成です．
-        第一部では，まず \SATySFi; での文書作成において欠かせない基本的な知識を説明します．
-        第二部では，Versatyle を用いた文書作成について，
-        \SATySFi; のマークアップ言語としての側面に焦点を当てつつ説明します．
-        第三部では，独自のコマンドを定義したり，
-        パッケージやクラスファイルを作成及びカスタマイズしたりする際に
-        必要な知識である， \SATySFi; のプログラミング言語としての側面を説明します．
-      }
-    >
+
+    Versatyle パッケージをインストールすることにより，
+    クラスファイルとパッケージがすべて使えるようになります．
+    Versatyle 文書クラスを用いて文書を作成すれば
+    自動的に Versatyle が提供する様々なコマンドが使えるようになりますが，
+    Versatyle 文書クラスを用いない場合でも，
+    Versatyle パッケージに入っている特定のパッケージをインポートして
+    用いることも可能です．
+    なおファイル構成という意味では，
+    versatyle/math パッケージもいくつかのファイルに分かれています．
+  }
+
+  +section{バージョン履歴}<
   >
 >
 
-+part{マークアップ}<
-  +chapter{文書構造}<
-    +section{章立て}<
-      +p{
-        ドキュメントを作成する上で，章立ては重要な要素といえます．
-        Versatyle では章立てのために以下のコマンドを用意しています．
-      }
-
-      +listing{
-        * \code(`+part`);: （日本語で言うところの）部
-        * \code(`+chapter`);: （日本語で言うところの）章
-        * \code(`+section`);: （日本語で言うところの）節
-        * \code(`+subsection`);: （日本語で言うところの）小節
-        * \code(`+subsubsection`);: （日本語で言うところの）小々節
-      }
-
-      +p{
-        \SATySFi; では，これらを入れ子構造で記述します．
-      }
-
-      +subsection{部 (part)}<
-        +p{
-          部を作成するには \code(`+part`); を用います．
-        }
-      >
-
-    >
-  >
-
-  +chapter{数式}<
-    +p{
-    Versatyle では， \SATySFi; の標準である math パッケージを元に
-    便利な変更を付け加えた \code(`versatyle/math`); パッケージを用意しています．
-    \code(`versatyle/versatyle`); クラスファイルを読み込めば自動で読み込まれますが，
-    クラスファイルを使わない場合でも，単品で読み込むことができます．
-    }
-    +section{別行立て数式}<
-      +p{
-        \code(`+eqn`); は特に math パッケージから変えていません．
-        \code(`+align`); はインターフェースをはじめとして種々の変更を加え，
-        ラベル付けができるようにしました．
-        また， LaTeX ではおなじみの \code(`+gather`); を追加しました．
-        以下のような数式を書くことができます．
-        ラベルを指定することもできます．
-      }
-
-      +gather(${
-      | \(x^2 + y^2\)\(a^2 + b^2\) = \(ax + by\)^2 + \(ay - bx\)^2,
-      | \(x + a\)\(x + b\) = x^2 + \(a + b\) x + ab
-      |});
-
-      +eqnalign?:[{(1)}; {(very long long label)}](${
-      | \frac{d}{dx}f\(x\) |= p
-      |        |= \int_{0}^{\pi} p\(x\)
-      |});
-
-      +p{
-         \code(`+alignat`); は複数の数式を並べるのに便利です．
-      }
-
-      +eqnalignat(2)(${
-      | f\(x\) |= p       | g\(x\) |= q
-      |        |= p\(x\)  |        |= p\(x\)
-      |});
-
-
-    >
-    +section{行列}<
-
-      +p{
-        行列を書くこともできます．
-      }
-
-      +eqnalign(${
-      | A |= \pmatrix!(2){| 1 | 2 | 3 | 4 |}^2
-      |   |= \pmatrix!(2){| 7 | 10 | 15 | 22 |}
-      |});
-    >
-
-    +section{アクセント}<
-      +p{
-        アクセント記号を書くことが出来ます．
-      }
-      +gather(${
-      | \bar{a},
-        \bar{b},
-        \bar{c},
-        \bar{d},
-        \bar{e},
-        \bar{f},
-        \bar{g},
-        \bar{h},
-        \bar{i},
-        \bar{j},
-        \bar{k},
-        \bar{l},
-        \bar{m},
-        \bar{n},
-        \bar{o},
-        \bar{p},
-        \bar{q},
-        \bar{r},
-        \bar{s},
-        \bar{t},
-        \bar{u},
-        \bar{v},
-        \bar{w},
-        \bar{x},
-        \bar{y},
-        \bar{z},
-      | \bar{A},
-        \bar{B},
-        \bar{C},
-        \bar{D},
-        \bar{E},
-        \bar{F},
-        \bar{G},
-        \bar{H},
-        \bar{I},
-        \bar{J},
-        \bar{K},
-        \bar{L},
-        \bar{M},
-        \bar{N},
-        \bar{O},
-        \bar{P},
-        \bar{Q},
-        \bar{R},
-        \bar{S},
-        \bar{T},
-        \bar{U},
-        \bar{V},
-        \bar{W},
-        \bar{X},
-        \bar{Y},
-        \bar{Z},
-      | \bar{\alpha}  ,
-        \bar{\beta}   ,
-        \bar{\gamma}  ,
-        \bar{\delta}  ,
-        \bar{\epsilon},
-        \bar{\zeta}   ,
-        \bar{\eta}    ,
-        \bar{\theta}  ,
-        \bar{\iota}   ,
-        \bar{\kappa}  ,
-        \bar{\lambda} ,
-        \bar{\mu}     ,
-        \bar{\nu}     ,
-        \bar{\xi}     ,
-        \bar{\omicron},
-        \bar{\pi}     ,
-        \bar{\rho}    ,
-        \bar{\sigma}  ,
-        \bar{\tau}    ,
-        \bar{\upsilon},
-        \bar{\phi}    ,
-        \bar{\chi}    ,
-        \bar{\psi}    ,
-        \bar{\omega}  ,
-      | \hat{x}, \tilde{x}, \bar{x}, \adot{x}, \ddot{x}
-      |});
-    >
-
-    +section{括弧類}<
-      +p{
-        \SATySFi; において，括弧類は基本的に graphics によって描画されます．
-        たとえば \code(`\paren`); を用いると，
-        中身の高さに応じて大きさが変化するカッコを入れることが出来ます．
-        \SATySFi; では\code(`\(\)`); を数式中に用いることで
-        フォントに由来する括弧を表示することが出来ますが，
-        大きさは自動で変化しません．
-      }
-      +p{
-        Versatyle では，新たな括弧として \code(`\p`);, \code(`\b`); を提供します．
-      }
-
-      +p{
-        \list-table[r;l;]{
-          * ** コマンド
-            ** 組版結果
-          * ** \code(`\(\)`);
-            ** \math(
-                 let-math \font-paren inner = ${\(#inner\)} in
-                 ${x^3 + 4x^2 - 3x + 1 = \font-paren{\font-paren{\font-paren{x + 4} x} - 3} x + 1}
-               );
-          * ** \code(`\paren{}`);
-            ** ${x^3 + 4x^2 - 3x + 1 = \paren{\paren{\paren{x + 4} x} - 3} x + 1}
-          * ** \code(`\p{}`);
-            ** ${x^3 + 4x^2 - 3x + 1 = \p{\p{\p{x + 4} x} - 3} x + 1}
-        }
-      }
-
-      +p{
-        \list-table[cw 100pt;cw 100pt;]{
-          * ** 従来の括弧
-            ** 新しい括弧
-          * ** ${\brace{ x + 1 }}
-            ** ${\b{ x + 1 }}
-          * ** ${\brace{ \sqrt{x + 1} }}
-            ** ${\b{ \sqrt{x + 1} }}
-          * ** ${\brace{x + \frac{1}{2} }}
-            ** ${\b{x + \frac{1}{2} }}
-          * ** ${\brace{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }}
-            ** ${\b{x + \frac{1}{2 + \frac{1}{2 + \frac{1}{2}}} }}
-        }
-      }
-
-      +p{あとは絶対値記号もあります． ${\Abs{\Abs{x}}\cdot \abs{\abs{x}}}}
-
-      +eqnalign(${
-      | | \Abs{\Abs{\Abs{xyh} + 1} + \frac{1}{2}}
-      | | \B{\B{x}}
-      | | \sqbracket{\sqbracket{x}}
-      | | \Angle{x}
-      | | \angle-bracket{x}
-      |});
-
-    >
-
-  >
-
-  +chapter{図表}<
-    +section{図の挿入}<
-    >
-
-    +section{表の挿入}<
-    >
-  >
++chapter{Versatyle 文書クラス}<
 >
 
-+part{プログラミング}<
++chapter{Versatyle/math パッケージ}<
+  +p{
+    Versatyle には，数式を記述するためのコマンドを定義する math パッケージが入っています．
+    現在は標準の `math` パッケージに足りない機能を補完するという意味合いが強く，
+    標準のパッケージを完全に置き換えるものではありません．
+    そのため
+  }
+
 
 >
 
