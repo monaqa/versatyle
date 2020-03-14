@@ -9,6 +9,7 @@
 @import: ../math
 @import: ../table
 @import: ../module/counter
+@import: ../module/param
 
 
 module VersatyleBook : sig
@@ -37,8 +38,6 @@ module VersatyleBook : sig
   direct \math : [math] inline-cmd
   direct +p : [inline-text] block-cmd
   direct \emph : [inline-text] inline-cmd
-
-  direct +set-param: ['a ref; 'a] block-cmd
 
   %% }}}
 
@@ -118,10 +117,6 @@ end = struct
   %% }}}
 
   %% convenient values/functions {{{
-
-  let-block ctx +set-param key value =
-    let () = key |> Ref.set value in
-    block-nil
 
   % size だけを変更する
   let set-font-cfg-size fcfg ctx = set-font-size fcfg#size ctx
@@ -264,22 +259,24 @@ end = struct
     | 25 -> [10; 10;  5;         ] % xxv
     |  _ -> [ 0;  0;             ] % ??
 
-  let to-roman num =
-    embed-string
-      (string-unexplode
-        (List.map (fun i -> num-to-roman-char false i) (roman-seq num)))
+  let to-roman ctx num =
+    read-inline ctx (
+      embed-string (string-unexplode
+        (List.map (fun i -> num-to-roman-char false i) (roman-seq num))
+      ))
 
-  let to-Roman num =
-    embed-string
-      (string-unexplode
-        (List.map (fun i -> num-to-roman-char true i) (roman-seq num)))
+  let to-Roman ctx num =
+    read-inline ctx (
+      embed-string (string-unexplode
+        (List.map (fun i -> num-to-roman-char true i) (roman-seq num))
+      ))
 
   let-block ctx +part it-title bt-inner =
-    let idx = to-Roman (Counter.inc counter-part) in
+    let _ = Counter.inc counter-part in
 
     let ctx-title = ctx |> set-font-cfg cfg-text#part-title-text in
     let ctx-num = ctx |> set-font-cfg cfg-text#part-title-num in
-    let ib-num = read-inline ctx-num {PART #idx;} in
+    let ib-num = read-inline ctx {PART \getcounter?:(to-Roman)(counter-part);} in
     let ib-title = read-inline ctx-title it-title in
 
     let ib-gr = inline-graphics cfg-length#text-width 3pt 0pt (fun (x, y) -> [
@@ -300,8 +297,8 @@ end = struct
       +++ bb-title-overall +++ bb-inner
 
   let-block ctx +chapter it-title bt-inner =
-    let idx = embed-string (arabic (Counter.inc counter-chp)) in
-    let it-num = {Chapter #idx;} in
+    let _ = Counter.inc counter-chp in
+    let it-num = {Chapter \getcounter(counter-chp);} in
 
     let ctx-title = ctx |> set-font-cfg cfg-text#chapter-title in
     let leading-height = (get-font-size ctx-title) *' 0.5 in
@@ -322,9 +319,8 @@ end = struct
     clear-page +++ bb-num +++ bb-title +++ bb-inner
 
   let-block ctx +section it-title bt-inner =
-    let idx-chp = embed-string (arabic (Counter.get counter-chp)) in
-    let idx-sec = embed-string (arabic (Counter.inc counter-sec)) in
-    let it-num = {#idx-chp;.#idx-sec;} in
+    let _ = Counter.inc counter-sec in
+    let it-num = {\getcounter(counter-chp);.\getcounter(counter-sec);} in
 
     let ctx-title = ctx |> set-font-cfg cfg-text#section-title in
     let ib-num = read-inline ctx-title it-num in
@@ -338,10 +334,10 @@ end = struct
     bb-title +++ bb-inner
 
   let-block ctx +subsection it-title bt-inner =
-    let idx-chp = embed-string (arabic (Counter.get counter-chp)) in
-    let idx-sec = embed-string (arabic (Counter.get counter-sec)) in
-    let idx-sse = embed-string (arabic (Counter.inc counter-sse)) in
-    let it-num = {#idx-chp;.#idx-sec;.#idx-sse;} in
+    let _ = Counter.inc counter-sse in
+    let it-num =
+      {\getcounter(counter-chp);.\getcounter(counter-sec);.\getcounter(counter-sse);}
+    in
 
     let ctx-title = ctx |> set-font-cfg cfg-text#subsection-title in
     let ib-num = read-inline ctx-title it-num in
@@ -355,11 +351,10 @@ end = struct
     bb-title +++ bb-inner
 
   let-block ctx +subsubsection it-title bt-inner =
-    let idx-chp = embed-string (arabic (Counter.get counter-chp)) in
-    let idx-sec = embed-string (arabic (Counter.get counter-sec)) in
-    let idx-sse = embed-string (arabic (Counter.get counter-sse)) in
-    let idx-sss = embed-string (arabic (Counter.inc counter-sss)) in
-    let it-num = {#idx-chp;.#idx-sec;.#idx-sse;#idx-sss;} in
+    let _ = Counter.inc counter-sss in
+    let it-num =
+      {\getcounter(counter-chp);.\getcounter(counter-sec);.\getcounter(counter-sse);.\getcounter(counter-sss);}
+    in
 
     let ctx-title = ctx |> set-font-cfg cfg-text#subsubsection-title in
     let ib-num = read-inline ctx-title it-num in

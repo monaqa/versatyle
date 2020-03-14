@@ -1,5 +1,6 @@
 @require: base/ref
 @require: list
+@require: option
 
 module Counter : sig
 
@@ -30,6 +31,9 @@ module Counter : sig
   % Set the value to the counter.
   % All the values of child counters are not reset.
   val set-no-reset : int -> t -> unit
+
+  direct +setcounter : [t; int] block-cmd
+  direct \getcounter : [(context -> int -> inline-boxes)?; t] inline-cmd
 
 end = struct
 
@@ -78,5 +82,16 @@ end = struct
       | BranchCounter(ctr-value, children) -> List.map reset children
     in
     set-no-reset value ctr
+
+  let-block ctx +setcounter ctr value =
+    let () = ctr |> set value in
+    block-nil
+
+  let-inline ctx \getcounter ?:transf-opt ctr =
+    let value = get ctr in
+    let transf-default ctx num = (read-inline ctx (embed-string (arabic num))) in
+    let transf = transf-opt |> Option.from transf-default in
+    let ib-value = (transf ctx value) in
+    ib-value
 
 end
