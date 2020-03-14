@@ -1,8 +1,11 @@
 @require: enumitem/enumitem
-@require: code
 @import: ../src/cls/book
 
-VersatyleBook.document(|
+open VersatyleBook
+
+in
+
+document(|
   title = {|Versatyle パッケージ|};
   author = {|monaqa|};
   date = {|2020/2/24|};

@@ -3,6 +3,7 @@
 @require: list
 @require: color
 @require: gr
+@require: code
 @require: base/ref
 @require: base/map
 @import: ../math
@@ -159,6 +160,7 @@ end = struct
 
     let ctx =
       get-initial-context cfg-length#text-width (command \math)
+        |> set-code-text-command (command \code)
         |> set-dominant-wide-script Kana
         |> set-language Kana Japanese
         |> set-language HanIdeographic Japanese
