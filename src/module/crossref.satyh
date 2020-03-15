@@ -1,0 +1,70 @@
+@require: option
+@require: base/ref
+
+module CrossRef : sig
+
+  val outline : ((int * string * string * bool) list) ref
+
+  val register : string option -> (int -> string) option -> int option -> string -> inline-boxes
+
+  val get-num : string -> string option
+  val get-page : string -> string option
+
+  direct \ref : [string] inline-cmd
+  direct \ref-page : [string] inline-cmd
+
+end = struct
+
+  let generate-fresh-label =
+    let-mutable count <- 0 in
+    (fun () -> (
+      let () = count <- !count + 1 in
+      `generated:` ^ (arabic (!count))
+    ))
+
+  let outline = Ref.make []
+
+  let add-to-outline dpt content label =
+      outline |> Ref.set ((dpt, content, label, false) :: (Ref.get outline))
+
+  % keyopt: key 名．省略すると自動生成される
+  % pagefopt : ページ番号を文字列にする関数．デフォルトは arabic
+  % value: 登録したい内容．
+  % ol-depth-opt: PDF のアウトラインの深さ．アウトラインに追加したくなければ None を指定
+  let register keyopt pagefopt ol-depth-opt value =
+    let key =
+      match keyopt with
+      | None      -> generate-fresh-label ()
+      | Some(key) -> key
+    in
+    let pagef = pagefopt |> Option.from arabic in
+    let () = register-cross-reference (key ^ `:num`) value in
+    let () = match ol-depth-opt with
+      | None -> ()
+      | Some(dpt) -> add-to-outline dpt value key
+    in
+    hook-page-break (fun pbinfo _ ->
+      register-cross-reference (key ^ `:page`) (pagef pbinfo#page-number))
+
+  let get-num key = get-cross-reference (key ^ `:num`)
+  let get-page key = get-cross-reference (key ^ `:page`)
+
+  let no-pads = (0pt, 0pt, 0pt, 0pt)
+
+  let ref-frame ctx key opt =
+    let it =
+      match opt with
+      | None -> {?}
+      | Some(s) -> embed-string s
+    in
+    let deco (x, y) w h d =
+      let () = register-link-to-location key (x, y) w h d None in []
+    in
+    inline-frame-breakable no-pads (deco, deco, deco, deco) (read-inline ctx it)
+
+
+  let-inline ctx \ref key = ref-frame ctx key (get-num key)
+
+  let-inline ctx \ref-page key = ref-frame ctx key (get-page key)
+
+end

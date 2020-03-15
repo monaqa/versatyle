@@ -34,7 +34,7 @@ document(|
       * それ自身が提供するクラスファイル
         ** `versatyle/cls/book` パッケージ
       * 様々なコマンドを種類ごとにまとめたいくつかのパッケージ
-        ** `versatyle/math` パッケージ
+        ** `versatyle/math` パッケージ （第 \ref(`math/equation`); 節を参照）
         ** `versatyle/table` パッケージ
         ** etc.
     }
@@ -70,7 +70,7 @@ document(|
     それらを用いるには標準の `math` パッケージを用いる必要があります．
   }
 
-  +section{Versatyle/math/equation}<
+  +section?:(`math/equation`){Versatyle/math/equation}<
     +p{
       `versatyle/math/equation` パッケージでは，
       主に別行立て数式を組むための枠となるコマンドを提供します．
