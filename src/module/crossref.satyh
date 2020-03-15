@@ -43,8 +43,10 @@ end = struct
       | None -> ()
       | Some(dpt) -> add-to-outline dpt value key
     in
-    hook-page-break (fun pbinfo _ ->
-      register-cross-reference (key ^ `:page`) (pagef pbinfo#page-number))
+    hook-page-break (fun pbinfo (x, y) -> (
+      let () = register-cross-reference (key ^ `:page`) (pagef pbinfo#page-number) in
+      register-destination key (x, y)
+    ))
 
   let get-num key = get-cross-reference (key ^ `:num`)
   let get-page key = get-cross-reference (key ^ `:page`)
