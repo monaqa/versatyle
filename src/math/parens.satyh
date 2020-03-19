@@ -11,10 +11,10 @@ module VersatyleMathParens : sig
   val paren-scheme : (length -> length -> color -> graphics) -> (length -> length * length * length) -> (length -> length) -> paren
 
   direct \p : [math;] math-cmd
-  direct \b : [math;] math-cmd
-  direct \B : [math;] math-cmd
-  direct \Abs : [math;] math-cmd
-  direct \Angle : [math;] math-cmd
+  direct \pb : [math;] math-cmd
+  direct \pB : [math;] math-cmd
+  direct \pabs : [math;] math-cmd
+  direct \pangle : [math;] math-cmd
 
 end = struct
 
@@ -216,7 +216,7 @@ let pads-normal-bracket is-open fsize =
   let curly-bracket is-open =
     paren-scheme (gr-curly-bracket is-open) (pads-normal-bracket is-open) kern-default
 
-  let-math \b = math-paren (curly-bracket true) (curly-bracket false)
+  let-math \pb = math-paren (curly-bracket true) (curly-bracket false)
 
   % }}}
 
@@ -248,7 +248,7 @@ let pads-normal-bracket is-open fsize =
   let square-bracket is-open =
     paren-scheme (gr-square-bracket 0.5pt is-open) (pads-normal-bracket is-open) kern-default
 
-  let-math \B = math-paren (square-bracket true) (square-bracket false)
+  let-math \pB = math-paren (square-bracket true) (square-bracket false)
 
   % }}}
 
@@ -274,7 +274,7 @@ let pads-normal-bracket is-open fsize =
   let abs-bracket is-open =
     paren-scheme (gr-abs-bracket 0.5pt) (pads-abs-bracket is-open) kern-default
 
-  let-math \Abs = math-paren (abs-bracket true) (abs-bracket false)
+  let-math \pabs = math-paren (abs-bracket true) (abs-bracket false)
 
   % }}}
 
@@ -304,7 +304,7 @@ let pads-normal-bracket is-open fsize =
   let angle-bracket is-open =
     paren-scheme (gr-angle-bracket 0.5pt is-open) (pads-normal-bracket is-open) kern-default
 
-  let-math \Angle = math-paren (angle-bracket true) (angle-bracket false)
+  let-math \pangle = math-paren (angle-bracket true) (angle-bracket false)
 
   % }}}
 
